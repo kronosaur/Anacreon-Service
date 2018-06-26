@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<?eval (anacreonPageInit) ?>
+<?eval
+(block (imageDesc)
+	(define multiverseGetArticleEntry (apiGetMultiverseFunction 'multiverse.getArticleEntry))
+	(define gPageQuery (httpGetURLParams))
+	(define gArticleEntry (multiverseGetArticleEntry (@ gUserInfo 'username) (@ gUserInfo 'rights) (@ gPageQuery 'id)))
+
+	(set! imageDesc (@ gArticleEntry 'backgroundPage))
+	(cat
+		"<title>" (if gArticleEntry (@ gArticleEntry 'title) "This Is Not an Article") "</title>"
+
+		"<style>"
+		(if imageDesc
+			(cat
+				"body {"
+					"background-image: url(" (@ imageDesc 'url) "); "
+					"background-repeat: no-repeat; "
+					"background-position: center 0; "
+					"background-color: #121214; "
+				"} "
+				"#pageTitleSpacing {"
+					"height: " (max (- (@ imageDesc 'viewHeight) 134) 50) "px; "
+				"} "
+				"#pageBackgroundTitle {"
+					"height: " (max (@ imageDesc 'viewHeight) 50) "px; "
+				"} "
+				)
+			""
+			)
+		"</style>"
+		)
+	)
+ ?>
+</head>
+
+<body>
+<?if gArticleEntry ?>
+<div id='page'>
+	<div id='pageBackground'>
+		<div id='pageBackgroundHeader'></div>
+		<div id='pageBackgroundTitle'></div>
+		<div id='pageBackgroundBodyTop'></div>
+		<div id='pageBackgroundBody'></div>
+	</div>
+	<div id='pageFrame'>
+		<?eval (anacreonPageSignIn) ?>
+		<div id='pageTitleSpacing'></div>
+		<div id='pageTitle'><?eval (@ gArticleEntry 'title) ?></div>
+		<div id='pageBody'>
+			<div id='articleColumn'>
+				<?eval (utlArticleBody gArticleEntry) ?>
+			</div>
+			<div id="articleSidebar">
+				<div id="sidebarBody">
+					<?eval (utlArticleSidebar gArticleEntry) ?>
+				</div>
+				<div id="sidebarBackground">
+					<div id="sidebarBackgroundHeader"></div>
+					<div id="sidebarBackgroundBody"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<?else?>
+<div id='page'">
+	<div id='pageFrame'>
+		<?eval (anacreonPageSignIn) ?>
+		<div id='pageTitle'>This Is Not an Article</div>
+		<div id='pageBody'>
+			<div id='mainColumn'>
+			</div>
+		</div>
+	</div>
+</div>
+<?endif?>
+<div id='pageFooter'>
+	<?eval (anacreonPageSiteMap) ?>
+</div>
+<?eval (anacreonCommonDialogs) ?>
+</body>
+</html>

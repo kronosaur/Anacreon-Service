@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8"/>
+<title>Anacreon Map Snapshot</title>
+
+<link rel="stylesheet" href="css/anacreon.css"/>
+<script src="code/jquery-1.7.2.min.js"></script>
+<script src="code/core.js"></script>
+<script src="code/canvasui.js"></script>
+<script src="code/anacreon.js"></script>
+<script src="code/anacreonui.js"></script>
+<script src="code/fleetui.js"></script>
+<script src="code/galacticmap.js"></script>
+<script src="code/infopanehelper.js"></script>
+<script src="code/infopaneui.js"></script>
+<script src="code/navbarui.js"></script>
+<script src="code/planetarymap.js"></script>
+<script src="code/tacticalmap.js"></script>
+<script src="code/worldui.js"></script>
+<?eval
+	(block (authToken userInfo)
+		(set! authToken (httpGetCookie 'authToken))
+		(set! userInfo (apiValidateAuthToken authToken))
+
+		(if userInfo
+			(html (cat
+					//	Initialize some JS variables based on the currenly signed-in
+					//	user (so that scripts can access it).
+				
+					"<script>"
+					"var $UserInfo = new UserInfo(" (toJSON (@ userInfo 'username)) ", " (toJSON (@ userInfo 'rights)) ", " (toJSON authToken) "); "
+					"</script>"
+					)
+				{ }
+				)
+			"<script>var $UserInfo = null;</script>"
+			)
+		)
+?>
+
+<script src="code/map_snapshot.js"></script>
+</head>
+
+<body>
+	<canvas id="uiMap"></canvas>
+
+	<?eval (anacreonCommonDialogs) ?>
+
+	<!-- Resources -->
+	<img id="idMapIcons" src="res/MapIcons.png" style="display:none"/>
+	<img id="idMediumButton136Yellow" src="res/MediumButton136Yellow.png" style="display:none"/>
+
+	<!-- Needed so that the font loads. -->
+	<div style="font-family: SansationBold; z-index:0">Test</div>
+</body>
+</html>

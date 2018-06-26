@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<?eval (anacreonPageInit "Anacreon Start Game") ?>
+
+<style>
+.section {
+	display: inline-block;
+	width: 388px;
+	margin: 0 10px 0 0;
+}
+
+.sectionBody {
+	margin: 10px 0 0 0;
+}
+
+.sidebar {
+	display: inline-block;
+	width: 380px;
+	margin: 0 0 0 10px;
+	vertical-align: top;
+}
+
+#playerList {
+	width: 278px;
+}
+
+#playerAddFrame {
+	position: relative;
+	width: 397px;
+	height: 48px;
+	margin: 10px 0 0 0;
+}
+	
+#playerAddEdit {
+	width: 190px;
+}
+	
+#playerAddButton {
+	position: absolute;
+	left: 200px;
+}
+	
+#scenarioName {
+	font-size: 24pt;
+}
+</style>
+
+<script>
+	$PlayerList = [];
+
+	function AddPlayer (playerName, playerNameKey)
+		{
+		$PlayerList.push(playerNameKey);
+
+		var newLine = $("<li></li>").appendTo("#playerList");
+		newLine.text(playerName);
+		}
+
+	$(document).ready(function () {
+
+		//	Nothing to do if not signed in
+
+		if ($UserInfo == null)
+			return;
+
+		//	Get the scenario that we want to create
+		
+		if (sessionStorage.startNewParams == null)
+			{
+			window.location.href = "start.hexm";
+			return;
+			}
+			
+		var scena = JSON.parse(sessionStorage.startNewParams);
+			
+		//	Create the form based on the scenario
+		
+		$("#scenarioName").html(scena.name);
+		$("#scenarioInstructions").html(scena.createInstructions);
+
+		//	Start with user
+
+		AddPlayer($UserInfo.username, $UserInfo.usernameKey);
+
+		//	Add script to the create button
+		
+		$("#createButton").click(function () {
+		
+			//	Create game structure
+			
+			var gameCreate = {
+				authToken: $UserInfo.authToken,
+				scenarioID: scena.scenarioID,
+				scenarioRelease: scena.scenarioRelease,
+				players: $PlayerList,
+				//	LATER: For now we can only create MMO games
+				playerInvite: "open"
+				};
+		
+			//	Make a call to create the game.
+			
+			var request = $.ajax({
+				url: "/api/createGame",
+				type: "POST",
+				data: JSON.stringify(gameCreate),
+				contentType: "application/json",
+				dataType: "json",
+				});
+
+			request.done(function (data) {
+			
+				//	If this is an error then we report it
+				
+				if ($Hexarc.isError(data))
+					{
+					$("#scenarioInstructions").empty();
+					$("#scenarioInstructions").text($Hexarc.errorGetText(data));
+					return;
+					}
+			
+				//	navigate to the game itself
+				
+				window.location.href = "trantor.hexm?gameID=" + encodeURIComponent(data);
+				});
+			});
+		});
+</script>
+</head>
+
+<body>
+<div id='page' style="background-image: url('res/StartGameBackground.jpg')">
+	<div id='pageFrame'>
+		<?eval (anacreonPageSignIn) ?>
+		<div id='pageTitle'>Start New Game</div>
+		<div id='pageBody'><div class='singleColumn'>
+		<?if gUserInfo ?>
+			<div id="scenarioName"></div>
+			<div id="playersSection" class="section">
+	<!--			<div class="sectionIcon"><img src="res/ScenarioIconBlank.png" /></div> -->
+				<div class="sectionBody">
+					<div class="areaControl" style="width: 100%">
+						<div class="top"><div class="left"></div><div class="center">Players:</div><div class="right"></div></div>
+						<div class="middle"><ul id="playerList"></ul></div>
+						<div class="bottom"><div class="left"></div><div class="center"></div><div class="right"></div></div>
+					</div>
+					<div id="playerAddFrame">
+						<div id="playerAddEdit" class="editControl"><div class="editControlLeft"></div><input id="playerToAdd"/><div class="editControlRight"></div></div>
+						<div id="playerAddButton" class="mediumButton136Y">Add</div>
+					</div>
+				</div>
+				<div id="createButton" class="largeButton" style="position: relative; left: 252px; margin: 20px 0 0 0; clear: both;"><p>Create</p></div>
+			</div>
+			<div class="sidebar">
+				<div id="scenarioInstructions"></div>
+			</div>
+			<div style="height:380px"></div>
+		<?else?>
+			<?eval (anacreonPageNotSignedInPlaceholder)?>
+		<?endif?>
+		</div></div>
+	</div>
+</div>
+<div id='pageFooter'>
+	<?eval (anacreonPageSiteMap) ?>
+</div>
+<?eval (anacreonCommonDialogs) ?>
+</body>
+</html>

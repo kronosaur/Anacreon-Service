@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<?eval (anacreonPageInit "Anacreon Roadmap") ?>
+</head>
+
+<body>
+<div id='page' style="background-image: url('res/StartGameBackground.jpg')">
+	<div id='pageFrame'>
+		<?eval (anacreonPageSignIn) ?>
+		<div id='pageTitle'>Roadmap</div>
+		<div id='pageBody'>
+			<div id='mainColumn'>
+				<p>This article describes my plan for improving and enhancing <i>Anacreon</i>. As with many plans, any resemblence to reality is purely coincidental.</p>
+				<p>Last updated on: 7 May 2013.</p>
+
+				<!-- Alpha 7 -->
+
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Alpha 7</h1>
+					<p>Target release date: 12 May 2013</p>
+					<ul>
+					<li>Planetary disasters.</li>
+					<li>LAMs</li>
+					<li>Industry &amp; Growth doctrine: Tech to prevent planetary disasters and optimize world productions.</li>
+					<li>Science &amp; Technology doctrine: Doctrine for high-tech empires.</li>
+					</ul>
+				</div>
+
+				<!-- Alpha 8 -->
+
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Alpha 8</h1>
+					<p>Target release date: 9 June 2013</p>
+					<ul>
+					<li>Constructions</li>
+					<li>Piracy</li>
+					<li>Trading hubs?</li>
+					<li>Trade &amp; Enterprise doctrine: Better trading and anti-piracy support.</li>
+					<li>Nebulae and space effects</li>
+					</ul>
+				</div>
+
+				<!-- Unscheduled -->
+
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Future Release</h1>
+					<p>Target release date: Unscheduled</p>
+					<ul>
+					<li>iPad support.</li>
+					<li>Ambrosia</li>
+					<li>Cross-empire trading</li>
+					<li>Fleet orders</li>
+					</ul>
+				</div>
+			</div>
+			<div id="sideColumn">
+				<div style="height:100px;"></div>
+				<div class="sidebar solidBackground">
+					<h1>Work Schedule</h1>
+					<p>My goal is to work on <i>Anacreon</i> in two-week sprints. Each sprint will result in a new release, although I might release additional versions in case of severe bugs.</p>
+					<p>For example, the Alpha 3 sprint begins on Monday 21 January 2013 and ends with a release on Friday 1 Feburary 2013. (The Alpha 2 sprint is not exactly 2 weeks because of the Holidays.)</p>
+					<p>In addition, I will alternate with two-week sprints on <i>Transcendence</i> so the result will be a new release of each (roughly) every month.</p>
+					<h1>Suggestions and Feedback</h1>
+					<p>Please feel free to suggest features not in the roadmap or to recommend alterations to the roadmap. Post to the <a href="http://www.facebook.com/groups/64705270989/">Anacreon group</a> on Facebook or email me directly: <a href="mailto:anacreon@kronosaur.com">anacreon@kronosaur.com</a>.</p>
+					<p></p>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div id='pageFooter'>
+	<?eval (anacreonPageSiteMap) ?>
+</div>
+<?eval (anacreonCommonDialogs) ?>
+</body>
+</html>

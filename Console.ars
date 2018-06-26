@@ -1,0 +1,768 @@
+//	Console.ars
+//
+//	Anacreon Console Interface
+//	Copyright (c) 2014 by Kronosaur Productions, LLC. All Rights Reserved.
+
+function anacreon.addAes
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Adds aes to one or more sovereigns in a game."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			(sovereignID (@ params 1))
+			(aesCount (@ params 2))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 3)
+					(cat "USAGE\n\nanacreon.addAes {gameID} {sovereignID} {amount}")
+
+				//	Invoke
+
+				(invoke 'Anacreon.addCredit gameID sovereignID 'core.aes aesCount)
+				)
+			)
+		)
+
+function anacreon.addResources
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Adds resources to one or more sovereigns in a game."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			(sovereignID (@ params 1))
+			(resourceType (@ params 2))
+			(resourceCount (@ params 3))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 4)
+					(cat "USAGE\n\nanacreon.addResources {gameID} {sovereignID} {resourceTypeUNID} {amount}")
+
+				//	Invoke
+
+				(invoke 'Anacreon.addResources gameID sovereignID resourceType resourceCount)
+				)
+			)
+		)
+
+function anacreon.closeGame
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Closes an open game."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 1)
+					(cat "USAGE\n\nanacreon.closeGame {gameID}")
+
+				//	Invoke
+
+				(invoke 'Anacreon.saveGame gameID { forceClose:true })
+				)
+			)
+		)
+
+function anacreon.createSovereign
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Creates a sovereign of the given type."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			(sovereignType (@ params 1))
+			(createData (@ params 2))
+			(sovereignID nil)
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 1)
+					(cat "USAGE\n\nanacreon.createSovereign {gameID} {sovereignTypeUNID} [{data}]")
+
+				//	Invoke
+
+				(block ()
+					(set! sovereignID (invoke 'Anacreon.createSovereign gameID sovereignType createData))
+
+					//	Result
+
+					(cat "Created sovereign " sovereignID ".")
+					)
+				)
+			)
+		)
+
+function anacreon.deleteGame
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Deletes the given game by ID."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(= gameID "")
+					(cat 
+						"USAGE\n\n"
+
+						"anacreon.deleteGame {list of gameIDs}"
+						)
+
+				//	If gameID is a list, then we delete a list of games
+
+				(= (typeof gameID) 'list)
+					(block (totalResult)
+						(enum gameID theGameID
+							(block (result)
+								(set! result (utlDeleteGame theGameID))
+								(if totalResult
+									(set! totalResult (cat totalResult "\n" result))
+									(set! totalResult result)
+									)
+								)
+							)
+
+						totalResult
+						)
+
+				//	Otherwise, delete the game and return the result.
+
+				(utlDeleteGame gameID)
+				)
+			)
+		)
+
+function anacreon.destroySovereign
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Destroys a given NPE sovereign."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			(sovereignID (@ params 1))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 1)
+					(cat "USAGE\n\nanacreon.destroySovereign {gameID} {sovereignID}")
+
+				//	Invoke
+
+				(invoke 'Anacreon.destroySovereign gameID sovereignID)
+				)
+			)
+		)
+
+function anacreon.endSiege
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Ends a siege to a given world."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			(worldID (@ params 1))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 2)
+					(cat "USAGE\n\nanacreon.endSiege {gameID} {worldID}")
+
+				//	Invoke
+
+				(invoke 'Anacreon.endSiege gameID worldID)
+				)
+			)
+		)
+
+function anacreon.explore
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Sets the explored region of a given sovereign."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			(sovereignID (@ params 1))
+			(options (@ params 2))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 2)
+					(cat "USAGE\n\nanacreon.explore {gameID} {sovereignID} {options}")
+
+				//	Invoke
+
+				(invoke 'Anacreon.scan gameID sovereignID options)
+				)
+			)
+		)
+
+function anacreon.getAPIInfo
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Returns API info for the given game."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 1)
+					(cat "USAGE\n\nanacreon.getAPIInfo {gameID}")
+
+				//	Invoke
+
+				(invoke 'Anacreon.getAPIInfo gameID)
+				)
+			)
+		)
+
+function anacreon.getWorldDistribution
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Returns counts of worlds of various types."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			(dist (@ params 1))
+
+			//	This function returns a count of world of the given set of traits
+
+			(distByTraitList (lambda (gameID designByUNID traitList)
+				(block (
+					(allWorlds (invoke 'Anacreon.findObjects gameID { type:'worlds }))
+
+					(resultSet
+						(apply struct
+							(map traitList 'excludeNil theUNID
+								(if theUNID
+									(list theUNID 0)
+									)
+								)
+							)
+						)
+
+					(desiredByID
+						(apply struct
+							(map traitList 'excludeNil theUNID
+								(if (@ designByUNID theUNID)
+									(list (cat (@ (@ designByUNID theUNID) 'id)) (@ designByUNID theUNID))
+									)
+								)
+							)
+						)
+					)
+
+					(enum allWorlds theWorld
+						(enum (@ theWorld 'traits) theTrait
+							(block (
+								(traitID 
+									(if (= (typeof theTrait) 'int32)
+										theTrait
+										(@ theTrait 'traitID)
+										)
+									)
+
+								(desiredType (@ desiredByID (cat traitID)))
+								(desiredUNID (@ desiredType 'unid))
+								)
+
+								(if desiredType
+									(set@ resultSet desiredUNID (+ (@ resultSet desiredUNID) 1))
+									)
+								)
+							)
+						)
+
+					resultSet
+					)
+				))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 1)
+					(cat
+						"USAGE\n\nanacreon.getWorldDistribution {gameID} {distribution}\n\n"
+						"distribution:\n\n"
+						"'techLevel: Count of worlds of each world class.\n"
+						"'worldClass: Count of worlds of each world class.\n"
+						"{list of traits): Count of worlds possessing each trait."
+						)
+
+				//	If this is 'techLevel then return a distribution of tech levels
+
+				(= dist 'techLevel)
+					(block (
+						)
+						"Not yet implemented"
+						)
+
+				//	If this is 'worldClass then return a distribution of world classes
+
+				(= dist 'worldClass)
+					(block (
+						(designList (invoke 'Anacreon.getScenarioInfo gameID))
+						(designByUNID
+							(apply struct
+								(map designList 'excludeNil designType
+									(if (@ designType 'unid)
+										(list (@ designType 'unid) designType)
+										)
+									)
+								)
+							)
+
+						(worldClasses
+							(map designList 'excludeNil designType
+								(if (= (@ designType 'category) 'worldClass)
+									(@ designType 'unid)
+									)
+								)
+							)
+						)
+
+						(distByTraitList gameID designByUNID worldClasses)
+						)
+
+				//	Otherwise, we expect a list of trait UNIDs
+
+				(block (
+					(designList (invoke 'Anacreon.getScenarioInfo gameID))
+					(designByUNID
+						(apply struct
+							(map designList 'excludeNil designType
+								(if (@ designType 'unid)
+									(list (@ designType 'unid) designType)
+									)
+								)
+							)
+						)
+					)
+
+					(distByTraitList gameID designByUNID dist)
+					)
+				)
+			)
+		)
+
+function anacreon.listGames
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Returns a list of games."
+		}
+
+	(lambda (params)
+		(block (
+			(usernameKey (lowercase (@ params 0)))
+			)
+
+			(switch
+				//	If no parameter then we list all games
+
+				(< (count params) 1)
+					(map (invoke 'Aeon.getRows 'Anacreon.games nil nil 'noKey) 'excludeNil gameRecord 
+						(block (
+							(gameStatus (invoke 'Anacreon.getGameStatus (@ gameRecord 'gameID)))
+							(fileDesc (invoke 'Aeon.fileGetDesc (cat "/Anacreon.files/save/" (@ gameRecord 'gameID)) { storagePath:True }))
+							)
+
+							{
+							creator: (@ gameRecord 'creator)
+							id: (@ gameRecord 'gameID)
+							name: (@ gameRecord 'name)
+							players: (@ gameRecord 'playerCount)
+							playersActive: (|| (@ gameStatus 'playersActive) 0)
+							scenario: (@ gameRecord 'scenarioID)
+							status: (|| (@ gameStatus 'status) "closed")
+							storagePath: (@ fileDesc 'storagePath)
+							storageSize: (cat (format (convertTo 'int32 (/ (@ fileDesc 'size) 1000))) " KB")
+							}
+							)
+						)
+
+				//	Invoke
+
+				(block ()
+					(map (invoke 'Aeon.getRows (list 'Anacreon.games 'openGamesByCreationTime) nil '(10) 'noKey) 'excludeNil gameRecord
+						(invoke 'Aeon.getValue 'Anacreon.gamesAndPlayers (list usernameKey (@ gameRecord 'gameID)))
+					/*
+						(if (invoke 'Aeon.getValue 
+								(list 'Anacreon.gamesAndPlayers 'byGameIDAndPlayer)
+								(list (@ gameRecord 'gameID) usernameKey)
+								)
+							nil
+							{
+								gameID: (@ gameRecord 'gameID)
+								name: (@ gameRecord 'name)
+								}
+							)
+					*/
+						)
+					)
+				)
+			)
+		)
+
+function anacreon.listSovereigns
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Returns a list of sovereigns in the given game."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			(options (@ params 1))
+			(includeDestroyed (find options 'includeDestroyed))
+			(showStats (find options 'stats))
+			(showDoctrine (find options 'doctrine))
+			(showUser (find options 'user))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 1)
+					(cat "USAGE\n\nanacreon.listSovereigns {gameID} [{options}]\n\n"
+						"options:\n\n"
+						"doctrine: Show the sovereign's doctrine\n"
+						"includeDestroyed: Include destroyed sovereigns\n"
+						"stats: Show basic stats about sovereign (worlds, etc.)\n"
+						"user: Show basic stats about player\n"
+						)
+
+				//	Invoke
+
+				(map (invoke 'Anacreon.getSovereigns gameID nil 0) 'excludeNil theSovereign
+					(switch
+
+						//	If this empire is destroyed and we don't want 
+						//	destroyed empires, then skip.
+
+						(&& (not includeDestroyed) (not (@ theSovereign 'capitalID)))
+							Nil
+
+						//	Otherwise, compose structure
+
+						(block (
+							(stats (@ theSovereign 'stats))
+							)
+
+							(struct
+								(list 'id (@ theSovereign 'id))
+								(list 'name (@ theSovereign 'name))
+								(list 'capitalID (@ theSovereign 'capitalID))
+
+								(if showUser (list 'username (@ theSovereign 'username)))
+
+								(if showStats (list 'worlds (@ stats 'worlds)))
+								(if showStats (list 'fleets (@ stats 'fleets)))
+								(if showStats (list 'population (@ stats 'population)))
+								(if showStats (list 'techLevel (@ stats 'techLevel)))
+
+								(if showDoctrine (list 'doctrine (@ theSovereign 'doctrine)))
+								(if showDoctrine (list 'secession (@ theSovereign 'secessionChance)))
+								)
+							)
+						)
+					)
+				)
+			)
+		)
+
+function anacreon.refreshDesignations
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Refreshes the designation of all worlds."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 1)
+					(cat "USAGE\n\nanacreon.refreshDesignations {gameID}")
+
+				//	Invoke
+
+				(invoke 'Anacreon.refreshDesignations gameID)
+				)
+			)
+		)
+
+function anacreon.sendMessage
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Sends a message to one or more players."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID 
+				(if (= (@ params 0) "*")
+					nil
+					(@ params 0)
+					)
+				)
+			(sendToID 
+				(if (= (count params) 2) 
+					'online 
+					(if (= (@ params 1) "*")
+						nil
+						(@ params 1)
+						)
+					)
+				)
+			(messageText 
+				(if (= (count params) 2)
+					(@ params 1)
+					(@ params 2)
+					)
+				)
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 2)
+					(cat "USAGE\n\nanacreon.sendMessage {gameID}|* [{sovereignID}|online|*] {message}")
+
+				//	Invoke
+
+				(invoke 'Anacreon.sendMessage gameID nil sendToID messageText)
+				)
+			)
+		)
+
+function anacreon.safeMode
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Sets and clears safe mode."
+		}
+
+	(lambda (params)
+		(block (
+			(safeModeSetting (@ params 0))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 1)
+					(cat "USAGE\n\nanacreon.safeMode {true/nil}")
+
+				//	Invoke
+
+				(if (invoke 'Anacreon.setSafeMode safeModeSetting)
+					(cat "Anacreon safe mode enabled.")
+					(cat "Anacreon open to all players.")
+					)
+				)
+			)
+		)
+
+function anacreon.startSiege
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Starts a siege on a given world."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			(sovereignID (@ params 1))
+			(worldID (@ params 2))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 3)
+					(cat "USAGE\n\nanacreon.startSiege {gameID} {sovereignID} {worldID}")
+
+				//	Invoke
+
+				(invoke 'Anacreon.addSiege gameID sovereignID worldID)
+				)
+			)
+		)
+
+function anacreon.status
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Displays status of open games."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			(result (invoke 'Anacreon.getGameStatus gameID))
+			)
+
+			(switch
+				(not result)
+					(if gameID
+						(cat "Game " gameID " is not currently open.")
+						"No games open."
+						)
+
+				//	If we get back a list of game statuses then trim most of 
+				//	the fields for readability.
+
+				(= (typeof result) 'list)
+					(map result nil status {
+						id: (@ status 'id)
+						name: (@ status 'name)
+						creator: (@ status 'creator)
+						players: (@ status 'players)
+						playersActive: (@ status 'playersActive)
+						})
+
+				//	Otherwise, full results
+
+				result
+				)
+			)
+		)
+
+function anacreon.updateGame
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Updates a game."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			(watches (if (@ params 1) (@ params 1) 1))
+			(ctx (@ params 2))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 1)
+					(cat "USAGE\n\nanacreon.updateGame {gameID} [{watches}]")
+
+				(< watches 1)
+					(cat "Unable to update for " watches " watches.")
+
+				(> watches 14400)
+					(cat "Unable to update for more than 14400 watches.")
+
+				//	Invoke
+
+				(block (
+					(updateLog (invoke 'Anacreon.updateGame gameID))
+					(updateResult (join updateLog "\n"))
+					)
+
+					//	If we only want a single update, then return the result
+
+					(if (= watches 1)
+						updateResult
+
+					//	Otherwise, we return a partial result and continue executing
+
+						{
+							ai2Directive: 'partialResult
+							partialResult: updateResult
+							continueCommand: (cat "anacreon.updateGame " gameID " " (- watches 1))
+							}
+						)
+					)
+				)
+			)
+		)
+
+function user.setAnacreonDeveloper
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Sets the user as a registered Anacreon developer."
+		}
+
+	(lambda (params)
+		(block (
+			(userInfo (invoke 'Cryptosaur.validateAuthToken (httpGetCookie 'authToken)))
+			
+			(targetUser (@ params 0))
+			)
+
+			(switch
+				//	Add rights to the user
+				
+				(block nil
+					(invoke 'Cryptosaur.addRights targetUser 'anacreon.developer)
+					(cat (userGetName) " granted anacreon.developer rights to " targetUser)
+					)
+				)
+			)
+		)

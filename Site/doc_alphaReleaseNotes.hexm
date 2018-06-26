@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<?eval (anacreonPageInit "Anacreon Alpha Release Notes") ?>
+</head>
+
+<body>
+<div id='page' style="background-image: url('res/StartGameBackground.jpg')">
+	<div id='pageFrame'>
+		<?eval (anacreonPageSignIn) ?>
+		<div id='pageTitle'>Alpha Release Notes</div>
+		<div id='pageBody'>
+			<div id='mainColumn'>
+				<p>Designing this version of Anacreon has been challenging: My primary goal was to transform the turn-based mechanics of the original into fluid real-time mechanics that could support a large number of simultaneous players. In this article I describe some of the design choices that I made to accomplish this, and how the game design might evolve in future version.</p>
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Time Scales</h1>
+					<p>How fast should fleets move in the game? How quickly should planets develop? I wanted the game to move fast enough to keep a player engaged (over an hour or two of play), but not so fast that everything would change overnight. The solution was to develop two different time scales: some things happen quickly (in real-time minutes) others take a day or more.</p>
+					<p>Jumpfleets, of course, move quickly: at 50 light-years per watch (1 minute real-time) they can conquer neighboring worlds quickly. Tech-levels and industry also increase quickly. This makes it possible to conquer and develop a dozen planets in the first hour of play. But growing beyond a certain size runs into limits: the powerful starships needed to conquer a player capital or advanced world take hours and days to move&mdash;long enough to give the defender time to prepare. Moreover, designating a sector capital is required to expand your empire beyond a certain radius, a task that requires 24 hours (a game-year). These two time scales serve to limit the expansion speed of an empire while still giving the player plenty to do.</p>
+				</div>
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Everything's a Trade-Off</h1>
+					<p>Another important goal for this version was to support a large diversity of player strategies. In the original Anacreon (and in many other 4X games) there is a single winning strategy. For example, the highest technology level is always the most powerful one. The single winning strategy is to achieve the highest tech level.</p>
+					<p>The new version of Anacreon takes a different approach: Higher tech levels give the player access to more powerful ships, but the trade-off is that high tech populations are smaller (fewer children per person) and require more luxury goods to be happy. Thus there are two possible winning strategies: Build a small number of high-tech ships or a large number of mid-tech ships.</p>
+					<p>I plan on including similar trade offs in other game mechanics. For example, larger empires might find it harder to keep their populations happy, requiring more troops to keep the peace.</p>
+				</div>
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Combinatorial Complexity</h1>
+					<p>One thing I learned from designing <a href="http://en.wikipedia.org/wiki/Chron_X">Chron X</a> was the power of combinatorial complexity. Imagine two kinds of ships: a frigate with combat power of 10 and a battleship with combat power of 50. It doesn't matter whether I attack with one battleship or 5 frigates. Both cases have a total of 50 point of combat power. But now imagine that a frigate can defend a battleship from missile attack. Now the composition of the force matters. A force of 1 battleship and 2 frigates could be more powerful than 2 battleships, even if combat power suggests the opposite. The ability of one unit type to influence the power of a different unit type leads to combinatorial complexity. Each new unit type introduced <i>multiplies</i> the possible combinations.</p>
+					<p>In the new version of Anacreon, I plan on using this technique to support different strategies. For example, jumpships have anti-missile capabilities that can defend jumpcruisers. Over time I will introduce more unit types that influence each other. Imagine, for instance, a jumpcarrier that can carry other units. Or a scanning unit that increases the offensive range of other units. These kinds of mechanics will increase the diversity of strategies in the game and hopefully lead to greater depth and challenge.</p>
+				</div>
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Future Development</h1>
+					<p>Given the challenges of developing both a new MMO game-engine and an HTML5/JavaScript front-end, I inevitably had to defer some beloved features from the original game. Features such as space constructions, nebulae, ambrosia, and even university worlds will have to wait for a subsequent release. Almost all features of the original game are viable in the new version and I expect to add all of them back in time. I would like the beta release, for example, to include space constructions and nebulae.</p>
+					<p>In addition, I plan on introducing new game mechanics that go beyond the original game. Some examples are: cross-empire trading and currencies, planetary disasters (nuclear holocaust, plagues, etc.), and new world classes (gas giants, ringed worlds, and asteroid belts).
+					<p>Are there feature that you would like to see in the game? Let me know through any of the feedback mechanisms listed above.</p>
+				</div>
+				<p style="text-align: right; margin-top:20pt;">George Moromisato<br/>December 2012</p>
+			</div>
+			<div id="sideColumn">
+				<div style="height:100px;"></div>
+				<div class="sidebar solidBackground">
+					<h1>Feedback</h1>
+					<p>Thank you for trying out this alpha release. I'd love to hear your feedback on the game. Please send me your thoughts in any of the following ways:</p>
+					<ul>
+						<li><a href="http://www.facebook.com/groups/64705270989/">Anacreon Group on Facebook</a></li>
+						<li><a href="http://neurohack.com/transcendence/forums/viewforum.php?f=48">Forums</a></li>
+						<li>Email: <a href="mailto:feedback@kronosaur.com">feedback@kronosaur.com</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div id='pageFooter'>
+	<?eval (anacreonPageSiteMap) ?>
+</div>
+<?eval (anacreonCommonDialogs) ?>
+</body>
+</html>

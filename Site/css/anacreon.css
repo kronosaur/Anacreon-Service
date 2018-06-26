@@ -1,0 +1,892 @@
+body {
+	margin: 0;
+	padding: 0;
+	
+	color: #d1d1ed;
+	font-family: SansationRegular, Verdana, sans-serif;
+	font-size: 12pt;
+
+	/* Must disable because Sansation has a bug */
+	font-variant-ligatures: none;
+
+	background-image: url("/res/PageCenter.jpg");
+	background-repeat: repeat-y;
+	background-position: center 967px;
+}
+
+.areaControl {
+	position: relative;
+}
+
+.areaControl div.bottom {
+	position: relative;
+	height: 7px;
+}
+
+.areaControl div.bottom div.center {
+	position: absolute;
+	left: 7px;
+	right: 15px;
+	height: 7px;
+	margin: 0;
+	background-image: url("/res/AreaControlBottomCenter.png");
+}
+
+.areaControl div.bottom div.left {
+	position: absolute;
+	left: 0;
+	width: 7px;
+	height: 7px;
+	background-image: url("/res/AreaControlBottomLeft.png");
+}
+
+.areaControl div.bottom div.right {
+	position: absolute;
+	left: 100%;
+	top: 0px;
+	width: 15px;
+	height: 7px;
+	margin-left: -15px;
+	background-image: url("/res/AreaControlBottomRight.png");
+}
+
+.areaControl div.middle {
+	position: relative;
+	padding: 10px 0 6px 0;
+	background-image: url("/res/AreaControlCenter.png");
+	border-right: solid 1px #828297;
+}
+
+.areaControl div.middle ul {
+	margin: 0;
+}
+
+.areaControl div.top {
+	position: relative;
+	height: 26px;
+}
+
+.areaControl div.top div.center {
+	position: absolute;
+	left: 7px;
+	right: 15px;
+	height: 22px;
+	margin: 0;
+	padding: 4px 0 0 4px;
+	border: none;
+	background-image: url("/res/AreaControlTopCenter.png");
+	color: #d1d1ed;
+	font-family: SansationRegular, Verdana, Sans-Serif;
+	font-size: 10pt;
+	font-weight: bold;
+}
+
+.areaControl div.top div.left {
+	position: absolute;
+	left: 0;
+	width: 7px;
+	height: 26px;
+	background-image: url("/res/AreaControlTopLeft.png");
+}
+
+.areaControl div.top div.right {
+	position: absolute;
+	left: 100%;
+	top: 0px;
+	width: 15px;
+	height: 26px;
+	margin-left: -15px;
+	background-image: url("/res/AreaControlTopRight.png");
+}
+
+.dialog476x580 {
+	position: absolute;
+	width: 376px;
+	height: 520px;
+	z-index: 60;
+	background-image: url("/res/DialogFrame476x580.png");
+
+	padding: 60px 50px 0 50px;
+}
+
+.dlgButtonSmall30 {
+	width: 30px;
+	height: 30px;
+	background-image: url("/res/SmallButton30.png");
+	padding: 0;
+	font-weight: bold;
+	text-align: center;
+	text-shadow: black 0px 0px 10px;
+	cursor: pointer;
+}
+
+.dlgCheckbox[type="checkbox"] {
+	margin: 3px 8px 3px 4px;
+}
+
+.dlgEditControl {
+	display: block;
+	height: 38px;
+}
+
+.dlgEditControl div.editControlLeft {
+	display: inline-block;
+	width: 7px;
+	height: 38px;
+	background-image: url("/res/EditControlLeft.png");
+}
+
+.dlgEditControl div.editControlRight {
+	display: inline-block;
+	width: 15px;
+	height: 38px;
+	background-image: url("/res/EditControlRight.png");
+}
+
+.dlgEditControl input {
+	display: inline-block;
+	vertical-align: top;
+	height: 38px;
+	margin: 0;
+	padding: 0;
+	border: none;
+	background-image: url("/res/EditControlCenter.png");
+	color: #d1d1ed;
+	font-family: SansationRegular, Verdana, Sans-Serif;
+	font-size: 12pt;
+	font-weight: bold;
+}
+
+.dlgErrorBar {
+	position: absolute;
+	width: 289px;
+	height: 64px;
+	z-index: 100;
+	
+	color: Black;
+	padding: 12px 38px 12px 34px;
+	
+	background-image: url("/res/ErrorBar361x88.png");
+	
+	display: none;
+}
+
+.dlgHelpBox {
+	display: block;
+	font-size: 10pt;
+	color: #606060;
+	margin: 12px 0 2px 0;
+}
+
+.dlgLabel {
+	display: block;
+	height: 18px;
+	font-size: 10pt;
+	font-weight: bold;
+	margin: 12px 0 2px 0;
+}
+
+.dlgLinkAbs {
+	position: absolute;
+	height: 18px;
+	font-size: 12pt;
+	margin-left: 6px;
+	padding: 0 4px 0 4px;
+	cursor: pointer;
+}
+
+.dlgLinkAbs:hover {
+	background-color: #5a5a74;
+}
+
+.dlgTextBlock {
+	display: block;
+	margin: 0;
+	border: none;
+	font-family: SansationRegular, Verdana, Sans-Serif;
+	font-size: 12pt;
+	color: #d1d1ed;
+	background-color: #4a4a54;
+	outline: none;
+}
+
+.editControl {
+	position: absolute;
+	height: 38px;
+}
+
+.editControl div.editControlLeft {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 7px;
+	height: 38px;
+	background-image: url("/res/EditControlLeft.png");
+}
+
+.editControl div.editControlRight {
+	position: absolute;
+	left: 100%;
+	top: 0px;
+	width: 15px;
+	height: 38px;
+	margin-left: -15px;
+	background-image: url("/res/EditControlRight.png");
+}
+
+.editControl input {
+	position: absolute;
+	left: 7px;
+	right: 15px;
+	height: 38px;
+	margin: 0;
+	padding: 0;
+	border: none;
+	background-image: url("/res/EditControlCenter.png");
+	color: #d1d1ed;
+	font-family: SansationRegular, Verdana, Sans-Serif;
+	font-size: 12pt;
+	font-weight: bold;
+}
+
+input, textarea, select, button {
+	font-variant-ligatures: none;
+}
+
+input:focus {
+	outline: none;
+}
+
+.largeButton {
+	position: absolute;
+	width: 136px;
+	height: 88px;
+	background-image: url("/res/LargeButton.png");
+	cursor: pointer;
+}
+
+.largeButton p {
+	position: absolute;
+	top: 100%;
+	margin-top: -40px;
+	width: 100%;
+	font-weight: bold;
+	text-align: center;
+}
+
+.mediumButton136Y {
+	width: 112px;
+	height: 34px;
+	background-image: url("/res/MediumButton136Yellow.png");
+	padding: 14px 12px 0 12px;
+	font-weight: bold;
+	text-align: center;
+	text-shadow: black 0px 0px 10px;
+	cursor: pointer;
+}
+
+.mediumDialog {
+	position: absolute;
+	top: 150px;
+	width: 876px;
+	height: 474px;
+	z-index: 60;
+	background-image: url("/res/MediumDialogFrame.png");
+}
+
+.mediumDialog .dlgErrorBar {
+	position:absolute;
+	top:386px;
+	left:-100px;
+}
+
+.mediumDialog .ctrlCancel {
+	position:absolute;
+	top:386px;
+	left:448px;
+}
+
+.mediumDialog .ctrlOK {
+	position:absolute;
+	top:386px;
+	left:292px;
+}
+
+.mediumDialog .ctrlFullCanvas {
+	position:absolute;
+	top:40px;
+	left:38px;
+}
+
+.mediumDialog .ctrlLongList {
+	position:absolute;
+	top:40px;
+	left:38px;
+}
+
+.resourceBox {
+	padding: 8px 4px 8px 4px;
+	text-align: right;
+}
+
+.resourceBoxSelected {
+	background-color: #303030;
+	border-radius: 8px;
+}
+
+.resourceBox div.resName {
+	font-size: 8pt;
+	color: #909090;
+}
+
+.resourceBox div.resSource, div.resDest {
+}
+
+.smallDialog {
+	position: absolute;
+	width: 376px;
+	height: 414px;
+	z-index: 60;
+	background-image: url("/res/SmallDialogFrame.png");
+
+	padding: 60px 50px 0px 50px;
+}
+
+.smallDialog .ctrlCancel {
+	position:absolute;
+	top:376px;
+	left:248px;
+}
+
+.smallDialog .ctrlOK {
+	position:absolute;
+	top:376px;
+	left:92px;
+}
+
+.smallDialog .ctrlOKCentered {
+	position:absolute;
+	top:376px;
+	left:170px;
+}
+
+.smallDialog .ctrlFullCanvas {
+	position:absolute;
+	top:40px;
+	left:14px;
+}
+
+.smallDialog .ctrlLongList {
+	position:absolute;
+	top:40px;
+	left:38px;
+}
+
+.smallDialog .dlgErrorBar {
+	position:absolute;
+	top:376px;
+	left:-290px;
+}
+
+.smallDialog .dlgTextBlock {
+	height: 268px;
+	width: 374px;
+}
+
+/* Page styles */
+
+#articleColumn {
+	display: inline-block;
+	width: 614px;
+	margin: 20px 0 0 0;
+
+	vertical-align: top;
+	line-height: 140%;
+}
+
+#articleColumn p {
+	margin: 0 0 20px 60px;
+}
+
+#articleColumn h1 {
+	margin: 0 0 10px 60px;
+
+	color: #d8d8c4;
+	font-weight: normal;
+	font-size: 24pt;
+}
+
+#articleColumn h2 {
+	margin: 0 0 8px 60px;
+
+	color: #d8d8c4;
+	font-weight: normal;
+	font-size: 18pt;
+}
+
+#articleColumn h3 {
+	margin: 0 0 4px 60px;
+
+	color: #d8d8c4;
+	font-weight: bold;
+	font-size: 12pt;
+}
+
+#articleColumn ol {
+	margin: 0 0 20px 60px;
+}
+
+#articleColumn ul {
+	margin: 0 0 20px 60px;
+}
+
+#articleColumn li {
+	margin: 0 0 6px 0px;
+}
+
+#articleColumn p + h1, #articleColumn ol + h1, #articleColumn ul + h1 {
+	margin: 40px 0 10px 60px;
+}
+
+#articleColumn a {
+	color: #b3b3ff;
+	text-decoration: none;
+}
+
+#articleColumn a:visited {
+}
+
+#articleColumn a:hover {
+	text-decoration: underline;
+}
+
+#sidebarBackground {
+	position: absolute;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	z-index: -1;
+
+	overflow: hidden;
+}
+
+#sidebarBackgroundHeader {
+	height: 100px;
+	background-image: url("/res/SidebarHeader.png");
+	background-repeat: no-repeat;
+}
+
+#sidebarBackgroundBody {
+	background-color: rgba(77,77,89,0.5);
+	height: 100%;
+}
+
+#sidebarBody {
+	padding: 30px 20px;
+}
+
+#articleSidebar {
+	position: relative;
+	display: inline-block;
+	width: 280px;
+	margin: 20px 0 0 20px;
+	vertical-align: top;
+
+	color: #b3b3cb;
+}
+
+#articleSidebar h1 {
+	color: #d1d1ed;
+	font-family: SansationRegular, Verdana, sans-serif;
+	font-weight: bold;
+	font-size: 12pt;
+	margin: 0 0 4px 0;
+}
+
+#articleSidebar h2 {
+	color: #d1d1ed;
+	font-family: SansationRegular, Verdana, sans-serif;
+	font-weight: bold;
+	font-size: 10pt;
+	margin: 0 0 2px 0;
+}
+
+#articleSidebar p {
+	font-size: 10pt;
+	margin: 0 0 20px 0;
+}
+
+#articleSidebar ul, #articleSidebar ol {
+	font-size: 10pt;
+	margin: 0 0 20px 0;
+}
+
+#articleSidebar li {
+	margin: 0 0 4px 0;
+}
+
+#articleSidebar a {
+	color: #b3b3ff;
+	text-decoration: none;
+}
+
+#articleSidebar a:visited {
+}
+
+#articleSidebar a:hover {
+	text-decoration: underline;
+}
+
+#mainColumn {
+	display: inline-block;
+	width: 614px;
+	vertical-align: top;
+	line-height: 125%;
+}
+
+#mainColumn p {
+	margin: 0 0 20px 60px;
+}
+
+#mainColumn a {
+	color: #b3b3ff;
+	text-decoration: none;
+}
+
+#mainColumn a:visited {
+}
+
+#mainColumn a:hover {
+	text-decoration: underline;
+}
+
+#mainColumn .bulletImage {
+	display: inline-block;
+	margin: 10px 20px 0 80px;
+	vertical-align: top;
+}
+
+#mainColumn .bulletText {
+	display: inline-block;
+	width: 400px;
+	margin: 10px 0 0 0;
+	vertical-align: top;
+}
+
+#mainColumn .bulletText h1 {
+	font-weight: bold;
+	font-size: 14pt;
+	margin: 0 0 4px 0;
+}
+
+#mainColumn .bulletText h2 {
+	font-weight: bold;
+	font-size: 12pt;
+	margin: 0 0 4px 0;
+}
+
+#mainColumn .bulletText li {
+	margin: 0 0 10px 0;
+}
+
+#mainColumn .bulletText p {
+	margin: 0 0 10px 0;
+}
+
+#page {
+	position: relative;
+	width: 100%;
+
+	background-repeat: no-repeat;
+	background-position: center top;
+}
+
+#pageBackground {
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	z-index: -1;
+	overflow: hidden;
+}
+
+#pageBackgroundBody {
+	height: 100%;
+	background-image: url("/res/PageCenter.jpg");
+	background-position: center 0;
+}
+
+#pageBackgroundBodyTop {
+	height: 791px;
+	background-image: url("/res/PageBodyTop.png");
+	background-position: center 0;
+	background-repeat: no-repeat;
+}
+
+#pageBackgroundHeader {
+	height: 134px;
+
+	background-image: url("/res/PageHeader.png");
+	background-position: center 0;
+	background-repeat: no-repeat;
+}
+
+#pageBody {
+	min-height: 600px;
+	padding: 85px 40px 0px 40px;
+}
+
+#pageBody .singleColumn {
+	padding: 0 60px 0px 60px;
+}
+
+#pageCover {
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+	background-color: Black;
+	opacity: 0.75;
+	z-index: 50;
+	display: none;
+}
+
+#pageFooter {
+	width: 100%;
+	height: 536px;
+	background-image: url("/res/PageBottom.jpg");
+	background-repeat: no-repeat;
+	background-position: center top;
+}
+
+#pageFooter .copyright {
+	width: 998px;
+	margin: 0 auto;
+
+	color: #a0a0a0;
+	font-family: SansationRegular, Verdana, sans-serif;
+	font-size: 8pt;
+	text-align: center;
+}
+
+#pageFooter .siteMap {
+	width: 918px;
+	height: 242px;
+	padding: 80px 40px 20px 40px;
+	margin: 0 auto;
+}
+
+#pageFooter .siteMap .column {
+	display: inline-block;
+	width: 306px;
+	vertical-align: top;
+	text-align: center;
+}
+
+#pageFooter .siteMap .column h1 {
+	color: #d1d1ed;
+	font-family: SansationRegular, Verdana, sans-serif;
+	font-weight: bold;
+	font-size: 10pt;
+	margin: 10pt 0 0 0;
+}
+
+#pageFooter .siteMap .column p {
+	color: #a0a0a0;
+	font-family: SansationRegular, Verdana, sans-serif;
+	font-size: 10pt;
+	margin: 1pt 0 0 0;
+}
+
+#pageFooter .siteMap .column a {
+	color: #b3b3ff;
+	font-family: SansationRegular, Verdana, sans-serif;
+	font-size: 10pt;
+	margin: 1pt 0 0 0;
+	text-decoration: none;
+}
+
+#pageFooter .siteMap .column a:visited {
+}
+
+#pageFooter .siteMap .column a:hover {
+	text-decoration: underline;
+}
+
+#pageFrame {
+	width: 998px;
+	margin: 0 auto;
+}
+
+#pageTitle {
+    display: block;
+	padding: 0 80px 0 80px;
+	margin: 120px 0 0 0;
+
+	color: #ffffd8;
+	font-family: SansationRegular, Verdana, sans-serif;
+	font-size: 42pt;
+}
+
+#sideColumn {
+	display: inline-block;
+	width: 280px;
+	margin: 0 0 0 20px;
+	vertical-align: top;
+}
+
+#sideColumn .sidebar {
+	margin: 20px 0 0 0;
+}
+
+#sideColumn .solidBackground {
+	background-color: #4d4d59;
+}
+
+#sideColumn .sidebar h1 {
+	color: #d1d1ed;
+	font-family: SansationRegular, Verdana, sans-serif;
+	font-weight: bold;
+	font-size: 12pt;
+	margin: 0;
+	padding: 10pt 50px 0 10px;
+}
+
+#sideColumn .sidebar p {
+	font-size: 10pt;
+	margin: 0;
+	padding: 10pt 50px 0 10px;
+}
+
+#sideColumn .sidebar ul {
+	font-size: 10pt;
+	margin: 0 0 0 20px;
+	padding: 10px 30px 10px 10px;
+}
+
+#sideColumn .sidebar li {
+	margin: 0 0 4px 0;
+}
+
+#sideColumn .sidebar a {
+	color: #b3b3ff;
+	text-decoration: none;
+}
+
+#sideColumn .sidebar a:visited {
+}
+
+#sideColumn .sidebar a:hover {
+	text-decoration: underline;
+}
+
+#signInRegion {
+	position: relative;
+	width: 100%;
+	height: 60px;
+}
+
+#headerLogo {
+	position: absolute;
+	left: 374px;
+	top:0px;
+	width: 250px;
+	height:60px;
+}
+
+#userAccountControls {
+	position: absolute;
+	left: 117px;
+	top: 18px;
+	margin: 0;
+	padding: 3px;
+	font-size: 8pt;
+	font-weight: bold;
+
+	cursor: pointer;
+}
+
+#userImage {
+	position: absolute;
+	left: 80px;
+	top: 0px;
+	width: 34px;
+	height: 34px;
+}
+
+#userName {
+	position: absolute;
+	left: 117px;
+	top: 0px;
+	margin: 0;
+	padding: 3px;
+	font-size: 12pt;
+}
+
+/* Generated by Font Squirrel (http://www.fontsquirrel.com) on July 18, 2012 06:35:08 PM America/New_York */
+
+@font-face {
+    font-family: 'SansationRegular';
+    src: url('/res/Sansation_Regular-webfont.eot');
+    src: url('/res/Sansation_Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/res/Sansation_Regular-webfont.woff') format('woff'),
+         url('/res/Sansation_Regular-webfont.ttf') format('truetype'),
+         url('/res/Sansation_Regular-webfont.svg#SansationRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'SansationLight';
+    src: url('/res/Sansation_Light-webfont.eot');
+    src: url('/res/Sansation_Light-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/res/Sansation_Light-webfont.woff') format('woff'),
+         url('/res/Sansation_Light-webfont.ttf') format('truetype'),
+         url('/res/Sansation_Light-webfont.svg#SansationLight') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'SansationBold';
+    src: url('/res/Sansation_Bold-webfont.eot');
+    src: url('/res/Sansation_Bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/res/Sansation_Bold-webfont.woff') format('woff'),
+         url('/res/Sansation_Bold-webfont.ttf') format('truetype'),
+         url('/res/Sansation_Bold-webfont.svg#SansationBold') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'SansationLightLightItalic';
+    src: url('/res/Sansation_Light_Italic-webfont.eot');
+    src: url('/res/Sansation_Light_Italic-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/res/Sansation_Light_Italic-webfont.woff') format('woff'),
+         url('/res/Sansation_Light_Italic-webfont.ttf') format('truetype'),
+         url('/res/Sansation_Light_Italic-webfont.svg#SansationLightLightItalic') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'SansationItalic';
+    src: url('/res/Sansation_Italic-webfont.eot');
+    src: url('/res/Sansation_Italic-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/res/Sansation_Italic-webfont.woff') format('woff'),
+         url('/res/Sansation_Italic-webfont.ttf') format('truetype'),
+         url('/res/Sansation_Italic-webfont.svg#SansationItalic') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'SansationBoldItalic';
+    src: url('/res/Sansation_Bold_Italic-webfont.eot');
+    src: url('/res/Sansation_Bold_Italic-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/res/Sansation_Bold_Italic-webfont.woff') format('woff'),
+         url('/res/Sansation_Bold_Italic-webfont.ttf') format('truetype'),
+         url('/res/Sansation_Bold_Italic-webfont.svg#SansationBoldItalic') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}

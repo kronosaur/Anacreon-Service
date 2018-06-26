@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<?eval (anacreonPageInit "Anacreon Create Game") ?>
+
+<style>
+.section {
+	display: inline-block;
+	width: 388px;
+	margin: 0 10px 0 0;
+}
+
+.sectionBody {
+	margin: 10px 0 0 0;
+}
+
+.sidebar {
+	display: inline-block;
+	width: 380px;
+	margin: 0 0 0 10px;
+	vertical-align: top;
+}
+
+#playerList {
+	width: 278px;
+}
+
+#playerAddFrame {
+	position: relative;
+	width: 397px;
+	height: 48px;
+	margin: 10px 0 0 0;
+}
+	
+#playerAddEdit {
+	width: 190px;
+}
+	
+#playerAddButton {
+	position: absolute;
+	left: 200px;
+}
+	
+#scenarioName {
+	font-size: 24pt;
+}
+</style>
+<?eval
+	; Load the gameRecord based on the gameID in the URL. We create the following
+	; structure:
+	;
+	; $GameInfo.gameID: The gameID
+	; $GameInfo.creator: The username who created the game
+	; $GameInfo.name: The name of the game (from the scenario)
+	; $GameInfo.joinInstructions: Info about joining the game (from the scenario)
+	; $GameInfo.playerCount: Number of players in the game
+	; $GameInfo.scenarioID: The scenario ID
+	; $GameInfo.scenarioRelease: The scenario release number
+	; $GameInfo.updateCount: The number of updates since game creation
+
+	(if gUserInfo
+		(block (
+			(gameID (@ (httpGetURLParams) 'gameID))
+			(gameInfo (apiGetGameJoinInfo (@ gUserInfo 'username) gameID))
+			(scenarioInfo (@ gameInfo 'scenarioInfo))
+			)
+		
+			(cat
+				"<script>"
+				"var $GameInfo = {"
+				"gameID: " (toJSON gameID) ", "
+				"creator: " (toJSON (@ gameInfo 'creator)) ", "
+				"joinInstructions: " (toJSON (@ gameInfo  'joinInstructions)) ", "
+				"name: " (toJSON (@ gameInfo 'name)) ", "
+				"playerCount: " (@ gameInfo 'playerCount) ", "
+				"scenarioID: " (toJSON (@ gameInfo 'scenarioID)) ", "
+				"scenarioRelease: " (@ gameInfo 'scenarioRelease) ", "
+				"updateCount: " (@ gameInfo 'updateCount) ", "
+				"};"
+				"</script>"
+				)
+			)
+		)
+?>
+<script>
+	var timerID;
+	var lastSeq = 0;
+
+	$(document).ready(function () {
+
+		//	Nothing to do if not signed in
+
+		if ($UserInfo == null)
+			return;
+
+		//	Get the game that we want to join
+		
+		var gameID = $Hexarc.getURLParam("gameID");
+		$("#scenarioName").html($GameInfo.name);
+
+		//	Register for log events.
+
+		setTimeout(updateLog, 500);
+		});
+
+	function updateLog ()
+		{
+		//	Get the latest log
+
+		var params = {
+			authToken: $UserInfo.authToken,
+			gameID: $GameInfo.gameID,
+			sequence: lastSeq,
+			};
+		
+		//	Make a call to create the game.
+			
+		var request = $.ajax({
+			url: "/api/getGameLog",
+			type: "POST",
+			data: JSON.stringify(params),
+			contentType: "application/json",
+			dataType: "json",
+			});
+
+		request.done(function (data) {
+			
+			if (data == null)
+				{
+				$("#logSection").append(document.createTextNode("Waiting for data."));
+				$("#logSection").append("<br/>");
+
+				//	Try again
+
+				setTimeout(updateLog, 500);
+				}
+			
+			//	If this is an error then we report it
+				
+			else if ($Hexarc.isError(data))
+				{
+				$("#logSection").empty();
+				$("#logSection").text($Hexarc.errorGetText(data));
+
+				//	No more updates
+				}
+
+			//	Output log
+				
+			else if (data.status == "creating")
+				{
+				if (data.log)
+					{
+					var i;
+
+					for (i = 0; i < data.log.length; i++)
+						{
+						$("#logSection").append(document.createTextNode(data.log[i]));
+						$("#logSection").append("<br/>");
+						}
+					}
+
+				lastSeq = data.logSequence;
+
+				//	Continue with updates
+
+				setTimeout(updateLog, 500);
+				}
+			else
+				{
+				$("#logSection").append(document.createTextNode("Creation done."));
+				$("#logSection").append("<br/>");
+
+				//	Done with updates
+				}
+			});
+		}
+
+</script>
+</head>
+
+<body>
+<div id='page' style="background-image: url('res/StartGameBackground.jpg')">
+	<div id='pageFrame'>
+		<?eval (anacreonPageSignIn) ?>
+		<div id='pageTitle'>Create Game</div>
+		<div id='pageBody'><div class='singleColumn'>
+		<?if gUserInfo ?>
+			<div id="scenarioName"></div>
+			<div id="logSection" class="section">
+			</div>
+		<?else?>
+			<?eval (anacreonPageNotSignedInPlaceholder)?>
+		<?endif?>
+		</div></div>
+	</div>
+</div>
+<div id='pageFooter'>
+	<?eval (anacreonPageSiteMap) ?>
+</div>
+<?eval (anacreonCommonDialogs) ?>
+</body>
+</html>

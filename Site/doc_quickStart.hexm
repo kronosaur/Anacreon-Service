@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<?eval (anacreonPageInit "Anacreon Quick Start Guide") ?>
+</head>
+
+<body>
+<div id='page' style="background-image: url('res/StartGameBackground.jpg')">
+	<div id='pageFrame'>
+		<?eval (anacreonPageSignIn) ?>
+		<div id='pageTitle'>Quick Start Guide</div>
+		<div id='pageBody'>
+			<div id='mainColumn'>
+				<p>Welcome to the new Anacreon! This version carries forward many familiar concepts from its predecessors, but it also contains radical differences. This guide will help you to learn about the new game mechanics and user interface.</p>
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Starting a Game</h1>
+					<p>To play the game you need a Kronosaur Multiverse ID. If you've already signed up to play <i>Transcendence</i> you can use the same username and password to sign in. Otherwise you will need to register a new username.</p>
+					<p>Once you've signed in, you have the option of joining a game in progress. The alpha test scenario is called <i>Fallen Worlds Alpha I</i>. [In future release you will be able to create a new game, but for this test joining a game is the only option.]</p>
+					<p>NOTE: You cannot control more than one empire per game. Please do not create a second ID to play as a second empire&mdash;you will be taking up a slot that could go to another player.</p>
+				</div>
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>The Map</h1>
+					<p>As with prior versions, the map is the most important display. Use the mouse to select worlds and fleets on the map. You will see information about the selected object at the bottom of the screen.</p>
+					<p><img src="res/doc_quickStart_zoomImage.jpg" style="text-align:center"/></p>
+					<p>At the top of the screen you will see a scale indicating the current zoom level. The plus and minus buttons will zoom in and zoom out. The planet icon on the right of the scale zooms all the way to planetary scale. Conversely, the galaxy icon on the left zooms back out to a scale of 25 light-years.</p>
+					<p>You can click and drag on an empty part of the map to pan around. You can also use the plus and minus buttons on the keyboard to zoom in and out. Finally, you can Ctrl+Click on a world to center the map on that world.</p>
+				</div>
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Deploying a Fleet</h1>
+					<p>Select a world (e.g., your capital) and click "Deploy" to deploy a fleet.</p>
+					<p>Top row of numbers is the units and resources for the new fleet. The bottom row shows the units and resources on the world.</p>
+					<p>Use the up arrow to move units and resources from the world to the fleet. Use the down arrow to move back to the world. You can type in a number to move in different increments.</p>
+					<p>To attack a world you need to bring infantry brigades. Make sure you bring at least twice as many brigades as the target world has.</p>
+					<p>Explorers are good for scanning space. Send them out to a known world and they will scan the area around it for more worlds. You must have at least 100 explorers in a fleet to achieve maximum scanning range.</p>
+				</div>
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Fleet Movement</h1>
+					<p>When a fleet is selected, you can click the "Destination" button and then a destination world. Or you can right-click on a destination.</p>
+					<p>Fleets move once per "watch". A watch is equivalent to 1 minute of real time or 6 standard hours of game-time. The watch at the top of the screen tells you the progress of the current watch.</p>
+					<p>Different kinds of ships move at different rates. Explorers move 100 light-years per watch; jumpships move 50 light-years per watch; starships move 1/5th of a light-year per watch. A fleet composed of multiple kinds of ships moves at the speed of the slowest ship.</p> 
+				</div>
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Conquest</h1>
+					<p>Once a fleet has reached an enemy world you can attack it. Select the world and click "Attack".</p>
+					<p>The attack will take place automatically, without your intervention. But if you want to see the attack, click on the floating pane to zoom in.</p>
+					<p>You can control individual groups, but in practice the AI is competent enough to handle the entire battle.</p>
+					<p>The AI will automatically abort an attack if it is wildly outnumbered or if it lacks sufficient ground troops to invate.</p>
+				</div>
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Developing your Empire</h1>
+					<p>When you've conquered a world, you can designate it to produce something.</p>
+					<p>You can create a trade route by importing a resource that a world needs from a world that produces it. For example, if you want your capital to import trillum, just click on the capital, click on "Import From" and click on a world that produces trillum.</p>
+					<p>You can build "structures" on a world. For example, a world with a GDM complex will product GDMs (ground defense missiles).</p>
+				</div>
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Hints &amp; Strategy</h1>
+					<p>You need jumpship components to build transports and more powerful jumpships you will need to import jumpship components. Designate a nearby world to be a jumpship autofac and order your capital to import from it.</p>
+					<p>A world may increase in technology level if it is has a trade route to higher level worlds. Some designations have a maximum technology level, however.</p>
+				</div>
+			</div>
+			<div id="sideColumn">
+				<div style="height:100px;"></div>
+				<div class="sidebar solidBackground">
+					<h1>Map</h1>
+					<ul>
+						<li>Click and drag to pan.</li>
+						<li>Ctrl+click to center on a world.</li>
+						<li>Plus and minus keys to zoom in and out.</li>
+					</ul>
+					<h1>Fleets</h1>
+					<ul>
+						<li>Select a fleet and right-click on a destination.</li>
+						<li>Explorers can scan for other worlds. Deploy at least 100 for maximum scanning power.</li>
+						<li>Bring infantry brigades to invade other worlds.</li>
+						<li>Transports are required to carry infantry brigades into combat.</li>
+					</ul>
+					<h1>Time</h1>
+					<ul>
+						<li>1 watch = 1 minute real-time = 6 hours game-time.</li>
+						<li>1 period = 60 watches = 1 hour real-time = 15 days game-time.</li>
+						<li>1 cycle = 24 periods = 1 day real-time = 1 standard year game-time.</li>
+					</ul>
+					<h1>Combat</h1>
+					<ul>
+						<li>Bring infantry brigades to conquer the world.</li>
+						<li>Bring transports (e.g., Reliant-class) to carry infantry.</li>
+						<li>Bring warships (e.g., Stinger-class and Adamant-class) to attack planetary defenses.</li>
+					</ul>
+					<h1>Development</h1>
+					<ul>
+						<li>Designate a world to order it to produce resources or ships.</li>
+						<li>Build structures to improve the world.</li>
+						<li>Import commands builds trade routes between worlds.</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div id='pageFooter'>
+	<?eval (anacreonPageSiteMap) ?>
+</div>
+<?eval (anacreonCommonDialogs) ?>
+</body>
+</html>

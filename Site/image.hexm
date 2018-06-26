@@ -1,0 +1,17 @@
+<?file
+(block (
+	(pageQuery (httpGetURLParams))
+	(gameID (@ pageQuery 'gameID))
+	(imageID (@ pageQuery 'imageID))
+	(imageUNID (@ pageQuery 'imageUNID))
+	)
+
+	//	Ask the engine to generate an image. It can either return a path (to some
+	//	file in AeonDb) or a fileDesc and data.
+
+	(if imageUNID
+		(invoke 'Anacreon.getImageFile gameID imageUNID)
+		(invoke 'Anacreon.getImageFile gameID imageID)
+		)
+	)
+?>

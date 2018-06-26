@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<?eval (anacreonPageInit "Anacreon Version History") ?>
+</head>
+
+<body>
+<div id='page' style="background-image: url('res/StartGameBackground.jpg')">
+	<div id='pageFrame'>
+		<?eval (anacreonPageSignIn) ?>
+		<div id='pageTitle'>Version History</div>
+		<div id='pageBody'>
+			<div id='mainColumn'>
+				<p>This a list of enhancements and bug fixes for each version.</p>
+
+				<!-- Alpha 6 -->
+
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Alpha 6</h1>
+					<p>7 May 2013</p>
+					<h2>Game Mechanics</h2>
+					<ul>
+					<li>Independent worlds rebuild defenses appropriately.</li>
+					<li>Independent worlds destroy structures that they cannot support.</li>
+					<li>Destroying a habitat or arcology converts it into a ruined version (which can be rebuilt later).</li>
+					<li>Recreated life support structures for worlds that need them.</li>
+					</ul>
+					<h2>Bug Fixes</h2>
+					<ul>
+					<li>Fixed bug in which map fails to draw because of unknown fleet.</li>
+					<li>Fixed bug causing sector capitals to become ready immediately.</li>
+					<li>Fixed bug with transports getting stuck and not landing.</li>
+					<li>Fixed bug in which infantry was not attacking targets on its own.</li>
+					<li>Fixed bug with independent worlds not producing infantry.</li>
+					<li>Fixed bug in which Victory starcruiser missiles had no effect on ground targets.</li>
+					<li>Fixed bug in which Adamant jumpcruisers had trouble hitting orbiting defenses.</li>
+					<li>Fixed bug which prevented new attack order after previous attack had failed.</li>
+					<li>Disabled invasion option if there are no troops to invade the world with.</li>
+					</ul>
+				</div>
+
+				<!-- Alpha 5 -->
+
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Alpha 5</h1>
+					<p>7 April 2013</p>
+					<h2>Doctrines</h2>
+					<ul>
+					<li>The player may choose a <i>doctrine</i> for their empire to specialize it in certain aspects. Depending on the doctrine chosen, the empire's capital and sector capitals will have different industries.</li>
+					<li><b>Fire &amp; Movement:</b> If you choose this doctrine the capital and sector capitals will build jumpships. [This is the default doctrine.]</li>
+					<li><b>Strength &amp; Honor:</b> With this doctrine the capitals will build starships.</li>
+					<li><b>Law &amp; Order:</b> This doctrine emphasizes internal security and anti-revolution. Starting in Alpha 5, very large empires (>100 worlds and >2 sector capitals) run the risk of <i>secession</i>. The larger the empire, the greater the chance that a sector capital will secede and take a chunk of the empire with it. The Law &amp; Order doctrine directs capitals to produce <b>imperial guards brigades</b> which greatly decrease the chance of secession. Imperial guards may be used as normal infantry (with double the attack strength). They decrease the chance of rebellion on worlds where they're placed, and if a rebellion starts anyway, they never defect.</li>
+					</ul>
+					<h2>Game Mechanics</h2>
+					<ul>
+					<li>Autofac and consumer goods worlds now auto-allocate their production. For example, a consumer goods world balances its production of food, goods, and luxuries based on demand (internal and exports). Players no longer need to (nor are they able to) set these percentages (though you may still influence this by changing the import/export percentages).</li>
+					<li>Fixed a bug in which all troops on a world automatically defected to the rebels when a rebellion starts.</li>
+					<li>Fixed a bug in which foundation worlds always rebel.</li>
+					<li>Fixed a bug in which landing transports with no troops caused the attacker to abort attack.</li>
+					</ul>
+					<h2>UI</h2>
+					<ul>
+					<li>Enhancements to map UI to highlight capitals and ship-producing worlds.</li>
+					<li>Added more information to News Pane when world is in rebellion.</li>
+					<li>Fleet icon is now proportional to combat power. Slow fleets (< 5.0 light-years per watch) have a slightly different icon.</li>
+					<li>Added founding date of empire on Empire Pane.</li>
+					<li>Fixed a bug which broke map snapshot. [NOTE: Snapshot is still broken on IE, but works on Chrome.]</li>
+					</ul>
+				</div>
+
+				<!-- Alpha 4 -->
+
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Alpha 4</h1>
+					<p>10 March 2013</p>
+					<h2>Game Mechanics</h2>
+					<ul>
+					<li>New tech level mechanics: Worlds no longer increase in tech level based on trade routes. Instead, the player may build improvements on the world to raise their tech level. In addition, <b>foundation worlds</b> can be used to uplift worlds around them via trade routes. Foundation worlds always rise to the level of the capital. The capital may be increased above biotech level by building improvements (e.g., the "Antimatter program" improvements).</li>
+					<li>Added high-tech resources: Added Helion-class explorer, Eldritch-class jumpship, Undine-class jumpcruiser, Minotaur-class gunship, Gorgos-class starfrigate, and Megathere-class starcruiser.</li>
+					<li>Ship maneuverability: Ship types now have a maneuverability rating which determines the speed with which they are able to change orbits. Transports have low maneuverability and take longer to move from high orbit down to the surface.</li>
+					<li>Players can now change the allocation of fixed industries (such as GDM sites).</li>
+					<li>Players can now change the production of individual units (e.g., change production rate of Vanguard-class explorers).</li>
+					</ul>
+					<h2>UI</h2>
+					<ul>
+					<li>Added icons for world designation.</li>
+					<li>When a combat group is selected the target being attacked is displayed.</li>
+					<li>Tactical view shows trails for each maneuvering group (added a UI option to disable, if performance is impacted).</li>
+					</ul>
+					<h2>AI</h2>
+					<ul>
+					<li>Combat groups now attack targets of opportunity.</li>
+					<li>Squadrons now try to stay out of range of ground defenses when picking an attack orbit.</li>
+					<li>Squadrons change orbit if their target changes orbit.</li>
+					<li>Ground forces no longer surrender as easily.</li>
+					</ul>
+					<h2>Bug Fixes</h2>
+					<ul>
+					<li>Using compression to decrease bandwidth used per watch.</li>
+					<li>Fixed a bug in which GDMs attacked while still out of range.</li>
+					<li>Fixed a bug in which orbital defenses where not attacking.</li>
+					<li>Fixed a ligature bug in Firefox ("ffi" was displaying as a block).</li>
+					</ul>
+				</div>
+
+				<!-- Alpha 3 -->
+
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Alpha 3</h1>
+					<p>5 February 2013</p>
+					<h2>Game Mechanics</h2>
+					<ul>
+					<li>If a larger empire makes an unprovoked attack on a smaller empire, revolution index increases for the attacker.</li>
+					<li>Attacking a larger empire after it attacked first decreases revolution index.</li>
+					<li>Rebellion decreases efficiency of a world.</li>
+					<li>Conquering a world resets its revolution index.</li>
+					<li>Worlds use up local resources before importing or producing more.</li>
+					<li>Worlds do not export resources that they need for other purposes (including building defenses).</li>
+					</ul>
+					<h2>UI</h2>
+					<ul>
+					<li>Ability to send short message to another empire (from their capital). NOTE: Sending a message reveals the location of your capital to the recipient.</li>
+					<li>Attack dialog box has been redone; shows combat strength estimates for both sides.</li>
+					<li>Added "imperial might" indicator to Empire status to measure relative size of empires.</li>
+					<li>Fleet info pane redesigned.</li>
+					<li>Show jump distance when setting destination for a fleet.</li>
+					<li>Added horizontal scrolling for info pane.</li>
+					<li>Show max tech level in primary industry pane.</li>
+					<li>Button to take a snapshot of entire map as an image.</li>
+					<li>Images for world class and tech levels.</li>
+					</ul>
+					<h2>Bug Fixes</h2>
+					<ul>
+					<li>Fixed a bug in which defending troops did not engage their targets.</li>
+					<li>Fixed a bug when renaming worlds.</li>
+					</ul>
+				</div>
+
+				<!-- Alpha 2 -->
+
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Alpha 2</h1>
+					<p>5 January 2013</p>
+					<h2>Game Mechanics</h2>
+					<ul>
+					<li>Ships over enemy planets are not allowed to orbit in range of enemy defenses unless in combat. This prevents an exploit in which you could put your transports in low orbit before beginning an attack.</li>
+					<li>Range of ship and defense weapons decreased by 50%. (Battles should be a little quicker; ships won't have to orbit so far away to stay out of range.)</li>
+					<li>Fleets are not displayed if not in scanning range.</li>
+					<li>Only scanned objects show resources.</li>
+					<li>Imperial worlds increase to tech level 5 even if no trade routes.</li>
+					<li>Sector capitals go up in tech to level of capital.</li>
+					<li>Empires abdicate automatically after 14 days of inactivity.</li>
+					<li>Capitals now produce Reliant and Stinger ships. (They have a jumpship autofac.)</li>
+					<li>Capitals and independent worlds should produce troops.</li>
+					<li>Decrease tendency for worlds to revolt.</li>
+					</ul>
+					<h2>UI</h2>
+					<ul>
+					<li>Ability to delete a trade route.</li>
+					<li>Ability to destroy an improvement.</li>
+					<li>Fleet ETA now shown in cycles/periods/watches (intead of fractions of a cycle).</li>
+					<li>UI message when trying to add a trade route outside of administrative range.</li>
+					<li>Administrative range is shown on the map.</li>
+					<li>Show a wait clock while a sector capital is being built.</li>
+					<li>Show target population for a world (if different from current).</li>
+					<li>Implemented abdicate (so a player can start with a new empire).</li>
+					<li>Implemented empire stats pane on capitals.</li>
+					</ul>
+					<h2>Bug Fixes</h2>
+					<ul>
+					<li>Prevent building of obsolete improvements.</li>
+					<li>Do not export resources needed for population.</li>
+					<li>Reduce allocation of fixed industry (e.g., GDMs) if needed to produce food, etc.</li>
+					<li>Clicking on message pane should take precedence over selection.</li>
+					<li>Empires without capitals should be destroyed (or fixed up).</li>
+					<li>When a fleet evaporates (all ships decayed) it should disappear.</li>
+					</ul>
+				</div>
+
+				<!-- Alpha 1 -->
+
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText">
+					<h1>Alpha 1</h1>
+					<p>4 December 2012</p>
+					<ul>
+					<li>First public release.</li>
+					</ul>
+				</div>
+			</div>
+			<div id="sideColumn">
+				<div style="height:100px;"></div>
+				<div class="sidebar solidBackground">
+					<h1>Development</h1>
+					<p>The <b>Alpha</b> series of releases is designed to test the basic concepts and infrastructure of the game. The core of the game is implemented but many features are missing.</p>
+					<p>The <b>Beta</b> series tests a game that is nearly feature-complete. The series is designed to test game balance, usability, and scalability.</p>
+					<h1>Suggestions and Feedback</h1>
+					<p>Please feel free to suggest features not in the roadmap or to recommend alterations to the roadmap. Post to the <a href="http://www.facebook.com/groups/64705270989/">Anacreon group</a> on Facebook or email me directly: <a href="mailto:anacreon@kronosaur.com">anacreon@kronosaur.com</a>.</p>
+					<p></p>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div id='pageFooter'>
+	<?eval (anacreonPageSiteMap) ?>
+</div>
+<?eval (anacreonCommonDialogs) ?>
+</body>
+</html>

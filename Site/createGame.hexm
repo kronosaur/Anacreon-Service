@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<?eval (anacreonPageInit "Anacreon Create Game") ?>
+
+<style>
+.section {
+	display: inline-block;
+	width: 388px;
+	margin: 0 10px 0 0;
+}
+
+.sectionBody {
+	margin: 10px 0 0 0;
+}
+
+.sidebar {
+	display: inline-block;
+	width: 380px;
+	margin: 0 0 0 10px;
+	vertical-align: top;
+}
+
+#scenarioName {
+	font-size: 24pt;
+}
+</style>
+<?eval
+	; Load the scenarioInfo based on the scenarioID in the URL. We create the following
+	; structure:
+	;
+	; $ScenaInfo.createInstructions: Instructions for creating the scenario
+	; $ScenaInfo.name: The name of the scenario
+	; $ScenaInfo.scenarioID: The scenarioID
+	; $ScenaInfo.scenarioRelease: The scenario release number
+
+	(if gUserInfo
+		(block (
+			(scenaID (@ (httpGetURLParams) 'scenarioID))
+			(scenaRelease (@ (httpGetURLParams) 'release))
+			(scenaInfo (apiGetScenarioInfo (@ gUserInfo 'username) scenaID scenaRelease))
+			)
+		
+			(cat
+				"<script>"
+				"var $ScenaInfo = {"
+				(if (@ scenaInfo 'error) (cat "error: " (toJSON (@ scenaInfo 'error)) ", "))
+				"scenarioID: " (toJSON scenaID) ", "
+				"scenarioRelease: " (toJSON scenaRelease) ", "
+				"name: " (toJSON (@ scenaInfo 'name)) ", "
+				"createInstructions: " (toJSON (@ scenaInfo 'createInstructions)) ", "
+				"};"
+				"</script>"
+				)
+			)
+		)
+?>
+<script src="code/creategamepage.js"></script>
+</head>
+
+<body>
+<div id='page' style="background-image: url('res/StartGameBackground.jpg')">
+	<div id='pageFrame'>
+		<?eval (anacreonPageSignIn) ?>
+		<div id='pageTitle'>Create Game</div>
+		<div id='pageBody'><div class='singleColumn'>
+		<?if gUserInfo ?>
+			<div id="scenarioName"></div>
+			<div id="playersSection" class="section">
+	<!--			<div class="sectionIcon"><img src="res/ScenarioIconBlank.png" /></div> -->
+				<div class="sectionBody">
+					<div class="areaControl" style="width: 100%; position:relative">
+						<div class="dlgLabel">Game Name:</div>
+						<div class="dlgEditControl"><div class="editControlLeft"></div><input class="ctrlGameName" style="width:364px"/><div class="editControlRight"></div></div>
+						<div class="dlgLabel">Join Instructions:</div>
+						<div class="dlgEditControl"><div class="editControlLeft"></div><input class="ctrlJoinInstructions" style="width:364px"/><div class="editControlRight"></div></div>
+					</div>
+				</div>
+				<div id="createButton" class="largeButton" style="position: relative; left: 252px; margin: 20px 0 0 0; clear: both;"><p>Create</p></div>
+				<div style="height:260px"></div>
+			</div>
+			<div class="sidebar">
+				<div id="scenarioInstructions"></div>
+			</div>
+		<?else?>
+			<?eval (anacreonPageNotSignedInPlaceholder)?>
+		<?endif?>
+		</div></div>
+	</div>
+</div>
+<div id='pageFooter'>
+	<?eval (anacreonPageSiteMap) ?>
+</div>
+<?eval (anacreonCommonDialogs) ?>
+</body>
+</html>

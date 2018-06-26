@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<?eval (anacreonPageInit "Anacreon Games") ?>
+
+<style>
+.gameRow {
+	padding: 12px 0 0 0;
+	}
+	
+.gameIcon {
+	display: inline-block;
+	margin: 0 20px 0 0;
+	width: 240px;
+	height: 150px;
+	}
+	
+.gameText {
+	display: inline-block;
+	margin: 0 20px 0 0;
+	vertical-align: top;
+	width: 258px;
+	}
+
+.gameText .mediumButton136Y
+	{
+	margin: 20px 0 20px 0;
+	}
+	
+.gameName {
+	font-size: 24pt;
+	}
+	
+.gameInfo {
+	display: inline-block;
+	vertical-align: top;
+
+	width: 240px;
+	margin-top: 24pt;
+	padding: 8px;
+	border-radius: 4px;
+	background-color: Black;
+	opacity: 0.5;
+	}
+	
+.gameInfo th {
+	text-align: right;
+	padding-right: 8pt;
+	font-size: 8pt;
+	}
+
+.gameInfo table {
+	opacity: 1.0;
+	}
+</style>
+
+<script src="code/gamespage.js"></script>
+</head>
+
+<body>
+<div id='page' style="background-image: url('res/StartGameBackground.jpg')">
+	<div id='pageFrame'>
+		<?eval (anacreonPageSignIn) ?>
+		<div id='pageTitle'>Games</div>
+		<div id='pageBody'><div class='singleColumn'><?eval (anacreonPageNotSignedInPlaceholder)?>
+		</div></div>
+	</div>
+</div>
+<div id='pageFooter'>
+	<?eval (anacreonPageSiteMap) ?>
+</div>
+<?eval (anacreonCommonDialogs) ?>
+</body>
+</html>

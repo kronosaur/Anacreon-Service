@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<?eval (anacreonPageInit "Anacreon") ?>
+
+<style>
+#coverColumn {
+	margin: 250px 0 110px 150px;
+}
+</style>
+
+<script>
+function playSignedIn ()
+	{
+	$.getJSON("/api/gameList", { authToken: $UserInfo.authToken, countOnly:true }, function (data) {
+		if (data == 0)
+			window.location.href = "start.hexm";
+		else
+			window.location.href = "games.hexm";
+		});
+	}
+
+function play ()
+	{
+	//	If not signed in, bring up sign in dialog
+
+	if ($UserInfo == null)
+		signInDialog(playSignedIn);
+
+	//	Otherwise, check to see if we have any games
+
+	else
+		playSignedIn();
+	}
+</script>
+</head>
+
+<body>
+<div id='page' style="background-image: url('res/HomeBackground.jpg');">
+	<div id='pageFrame'>
+		<?eval (anacreonPageSignIn) ?>
+		<div id='pageBody'>
+			<div id="coverColumn">
+				<div id="btnPlay" class="mediumButton136Y" onclick="play()">Play</div>
+			</div>
+			<div id="mainColumn">
+				<img src="res/BetaReleaseCover.png" style="margin: 0 0 20px 0;"/>
+				<p><i>Anacreon</i> is back! This beta release, though far from complete, contains the foundation of a radical new <i>Anacreon</i>. With support for hundreds of simultaneous players, thousands of worlds, and a diversity of ship classes and structures, this new version will bring new depth and playability to the classic game of galactic conquest.</p>
+				<p>Here's what you need to know about this beta release:</p>
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText"><h1>Massively Multiplayer</h1><p>Anacreon now supports hundreds of simultaneous players. The beta test scenario consists of more than 5,000 worlds ripe for colonization by up to one hundred players.</p></div>
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText"><h1>Real Time, Always Running</h1><p>The beta test scenario runs in real time and is always updating. You can sign in at any time and issue your orders&mdash;fleets will move and worlds will develop continuously. You can even fight real-time orbital battles with your fleets.</p></div>
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText"><h1>Lots Missing</h1><p>Of course, this is only the beginning. This beta test does not implement all of the features and game mechanics of the original game, but over time you will see more and more features appear.</p></div>
+				<div class="bulletImage" style="background-color: #808080; width:32px; height:32px"></div>
+				<div class="bulletText"><h1>Expect Problems</h1><p>Most importantly, please remember that there will be lots of problems with this version, from bad game mechanics to server outages and possibly game data corruption.</p></div>
+				<p>You are invited to try out this new beta release and give us feedback. Your input will direct the development and evolution of the game in the future. Please read the <a href="article.hexm?id=401">Quick Start Guide</a> for a tutorial on the new game, and click the Play button when you are ready.</p>
+				<div id="btnPlay" class="mediumButton136Y" style="margin-left:60px;" onclick="play()">Play</div>
+			</div>
+			<div id="sideColumn">
+				<div class="sidebar"><a href="article.hexm?id=401"><img src="res/Sidebar_QuickStartGuide.png"/></a></div>
+				<div class="sidebar"><a href="article.hexm?id=359"><img src="res/Sidebar_AlphaReleaseNotes.png"/></a></div>
+			</div>
+		</div>
+	</div>
+</div>
+<div id='pageFooter'>
+	<?eval (anacreonPageSiteMap) ?>
+</div>
+<?eval (anacreonCommonDialogs) ?>
+</body>
+</html>

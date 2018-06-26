@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8"/>
+<title>Anacreon</title>
+
+<link rel="stylesheet" href="css/anacreon.css"/>
+
+<style>
+#uiMap {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	left: 0px;
+	top: 0px;
+	background-color: #000000;
+	z-index: 10;
+}
+
+#uiNav {
+	position: relative;
+	margin: 0 auto;
+	height: 64px;
+	width: 1074px;
+	
+	background-image: url("res/NavBar.png");
+	z-index: 15;
+}
+
+#uiBottomFrame {
+	position: fixed;
+	margin: 0 auto;
+	bottom: 0px;
+	height: 225px;
+	width: 1200px;
+	
+	background-image: url("res/InfoPane.png");
+	z-index: 15;
+}
+
+#uiInfoPaneEdit {
+	position: absolute;
+
+	border: none;
+	background-color: #151519;
+	margin: 0;
+	padding: 0;
+}
+
+#uiObjectBar {
+	position: relative;
+	margin: 0 auto;
+	height: 100%;
+	width: 1200px;
+}
+
+#uiObjectBar .uiCenter {
+	position: absolute;
+	left: 100px;
+	width: 1000px;
+	height: 100%;
+}
+
+#uiObjectBar .uiCenter .uiTabContainer {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	height: 24px;
+}
+
+#uiObjectBar .uiCenter .uiTabContainer .uiTabs {
+}
+
+#uiObjectBar .uiCenter .uiTabContainer .uiTabs span {
+	display: inline-block;
+	margin-top: 2px;
+	padding: 2px 20px 0px 20px;
+	cursor: pointer;
+}
+
+#uiObjectBar .uiCenter .uiCommandContainer {
+	position:absolute;
+	left: 860px;
+	top: 30px;
+	height: 100%;
+	width: 200px;
+	
+	z-index: 30;
+}
+
+#uiObjectBar .uiLeft {
+	float: left;
+	height: 100%;
+	width: 100px;
+}
+
+#uiObjectBar .uiRight {
+	float: right;
+	height: 100%;
+	width: 100px;
+}
+
+.uiTabLabel {
+	color: #c0c0c0;
+	font-weight: bold;
+}
+
+.uiTabLabelSelected {
+	color: #000000;
+	font-weight: bold;
+
+	background-color: #D9D9FF;
+	opacity: 0.75;
+}
+</style>
+
+<script src="code/jquery-1.7.2.min.js"></script>
+<script src="code/core.js"></script>
+<script src="code/auth.js"></script>
+<script src="code/canvasui.js"></script>
+<script src="code/anacreon.js"></script>
+<script src="code/anacreonui.js"></script>
+<script src="code/fleetobj.js"></script>
+<script src="code/fleetui.js"></script>
+<script src="code/galacticmap.js"></script>
+<script src="code/infopanehelper.js"></script>
+<script src="code/infopaneui.js"></script>
+<script src="code/navbarui.js"></script>
+<script src="code/planetarymap.js"></script>
+<script src="code/siegeobj.js"></script>
+<script src="code/tacticalmap.js"></script>
+<script src="code/worldobj.js"></script>
+<script src="code/worldui.js"></script>
+
+<?eval
+	(block (authToken userInfo)
+		(set! authToken (httpGetCookie 'authToken))
+		(set! userInfo (apiValidateAuthToken authToken))
+
+		(if userInfo
+			(html (cat
+					//	Initialize some JS variables based on the currenly signed-in
+					//	user (so that scripts can access it).
+				
+					"<script>"
+					"var $UserInfo = new UserInfo(" (toJSON (@ userInfo 'username)) ", " (toJSON (@ userInfo 'rights)) ", " (toJSON authToken) "); "
+					"</script>"
+					)
+				{ }
+				)
+			"<script>var $UserInfo = null;</script>"
+			)
+		)
+?>
+
+<script src="code/trantor.js"></script>
+</head>
+
+<body>
+	<canvas id="uiMap"></canvas>
+	<canvas id="uiMapSnapshot" style="display:none;"></canvas>
+	<div id="uiNav" style="display:none;"><canvas id="uiNavCanvas" width="1074" height="64"></canvas></div>
+	<div id="uiBottomFrame" style="display:none;">
+		<div id="uiObjectBar">
+			<div class="uiCenter">
+				<canvas id="uiInfoPaneCanvas" width="1000" height="225"></canvas>
+				<div class="uiCommandContainer">
+					<div id="uiCmd1" class="mediumButton136Y">Command 1</div>
+					<div id="uiCmd2" class="mediumButton136Y">Command 2</div>
+					<div id="uiCmd3" class="mediumButton136Y">Command 3</div>
+					<div id="uiCmd4" class="mediumButton136Y">Command 4</div>
+				</div>
+				<div class="uiTabContainer">
+					<div class="uiTabs"><span style="margin-left: 20px" id="uiTabLabel1">Tab1</span><span id="uiTabLabel2">Tab2</span><span id="uiTabLabel3">Tab3</span><span id="uiTabLabel4">Tab4</span><span id="uiTabLabel5">Tab5</span><span id="uiTabLabel6">Tab6</span></div>
+				</div>
+				<input id="uiInfoPaneEdit" style="display:none;"/>
+			</div>
+		</div>
+	</div>
+
+	<?eval (anacreonCommonDialogs) ?>
+
+	<div id="dlgBuildImprovement" class="mediumDialog" style="display:none">
+		<canvas class="ctrlImprovementList ctrlLongList" height="330px" width="800px"></canvas>
+		<div class="ctrlImprovementDesc"></div>
+		<div class="ctrlCancel mediumButton136Y">Cancel</div>
+		<div class="ctrlOK mediumButton136Y">Build</div>
+		<div class="dlgErrorBar"></div>
+	</div>
+	
+	<div id="dlgConfirm" class="smallDialog" style="display:none">
+		<div class="dlgLabel"></div>
+		<div class="ctrlCancel mediumButton136Y">Cancel</div>
+		<div class="ctrlOK mediumButton136Y">OK</div>
+		<div class="dlgErrorBar"></div>
+	</div>
+
+	<div id="dlgDesignateWorld" class="mediumDialog" style="display:none">
+		<canvas class="ctrlDesignationList ctrlLongList" height="330px" width="800px"></canvas>
+		<div class="ctrlDesignationDesc"></div>
+		<div class="ctrlCancel mediumButton136Y">Cancel</div>
+		<div class="ctrlOK mediumButton136Y">Designate</div>
+		<div class="dlgErrorBar"></div>
+	</div>
+	
+	<div id="dlgEditIndustryAllocation" class="smallDialog" style="display:none">
+		<canvas class="ctrlFullCanvas" height="330px" width="446px"></canvas>
+		<div style='height:70px'></div>
+		<div class='dlgLabel'>Allocation as a percent of world industry:</div>
+		<div class='dlgEditControl'><div class='editControlLeft'></div><input class='ctrlValue' style='width:354px;'/><div class='editControlRight'></div></div>
+		<div class="ctrlCancel mediumButton136Y">Cancel</div>
+		<div class="ctrlOK mediumButton136Y">Set</div>
+		<div class="dlgErrorBar"></div>
+	</div>
+	
+	<div id="dlgEditProductAllocation" class="smallDialog" style="display:none">
+		<canvas class="ctrlFullCanvas" height="330px" width="446px"></canvas>
+		<div style='height:70px'></div>
+		<div class='dlgLabel'>Allocation as a percent of all products:</div>
+		<div class='dlgEditControl'><div class='editControlLeft'></div><input class='ctrlValue' style='width:354px;'/><div class='editControlRight'></div></div>
+		<div class="ctrlCancel mediumButton136Y">Cancel</div>
+		<div class="ctrlOK mediumButton136Y">Set</div>
+		<div class="dlgErrorBar"></div>
+	</div>
+	
+	<div id="dlgEditTechImport" class="smallDialog" style="display:none">
+		<canvas class="ctrlFullCanvas" height="330px" width="446px"></canvas>
+		<div style='height:70px'></div>
+		<div class='dlgLabel'>Tech level to uplift to:</div>
+		<div class='dlgEditControl'><div class='editControlLeft'></div><input class='ctrlValue' style='width:354px; z-index:10;'/><div class='editControlRight'></div></div>
+		<div class='dlgHelpBox'></div>
+		<div class="ctrlCancel mediumButton136Y">Cancel</div>
+		<div class="ctrlOK mediumButton136Y">Set</div>
+		<div class="dlgErrorBar"></div>
+	</div>
+	
+	<div id="dlgEditTradeRoute" class="smallDialog" style="display:none">
+		<canvas class="ctrlFullCanvas" height="330px" width="446px"></canvas>
+		<div style='height:70px'></div>
+		<div class='dlgLabel'>Import volume as a percent of demand:</div>
+		<div class='dlgEditControl'><div class='editControlLeft'></div><input class='ctrlValue' style='width:354px; z-index:10;'/><div class='editControlRight'></div></div>
+		<div class="ctrlCancel mediumButton136Y">Cancel</div>
+		<div class="ctrlOK mediumButton136Y">Set</div>
+		<div class="dlgErrorBar"></div>
+	</div>
+	
+	<div id="dlgFleetAttack" class="mediumDialog" style="display:none">
+		<canvas class="ctrlFullCanvas" height="330px" width="800px"></canvas>
+		<div class="ctrlCancel mediumButton136Y">Cancel</div>
+		<div class="ctrlOK mediumButton136Y">Attack</div>
+		<div class="dlgErrorBar"></div>
+	</div>
+
+	<div id="dlgFleetDeploy" class="mediumDialog" style="display:none">
+		<canvas class="ctrlFullCanvas" height="340px" width="800px"></canvas>
+
+		<div class="dlgButtonSmall30 ctrlDown" style="position:absolute; top:296px; left:520px;"><img src="res/DownArrow30.png"/></div>
+		<div id="transEdit" style="position:absolute; top:296px; left:364px; width:124px; height:22px; font:14pt SansationBold, Verdana, sans-serif; background-color:#303030; border-radius:8px; padding: 4px 12px 4px 12px; text-align:center;"></div>
+		<div class="dlgButtonSmall30 ctrlUp" style="position:absolute; top:296px; left:326px;"><img src="res/UpArrow30.png"/></div>
+
+		<div id="buttonCancel" class="ctrlCancel mediumButton136Y">Cancel</div>
+		<div id="buttonOK" class="ctrlOK mediumButton136Y">Deploy</div>
+
+		<div class="dlgErrorBar"></div>
+	</div>
+	
+	<div id="dlgFleetDisband" class="smallDialog" style="display:none">
+		<div class="ctrlCancel mediumButton136Y" style="position:absolute; top:386pc; left:248px">Cancel</div>
+		<div class="ctrlOK mediumButton136Y" style="position:absolute; top:386px; left:92px">Disband</div>
+	</div>
+
+	<div id="dlgInfo" class="smallDialog" style="display:none">
+		<div class="dlgLabel"></div>
+		<div class="ctrlOKCentered mediumButton136Y">OK</div>
+	</div>
+
+	<div id="dlgSendMessage" class="smallDialog" style="display:none">
+		<div class="dlgLabel ctrlLabel"></div>
+		<textarea class="dlgTextBlock"></textarea>
+		<div class="ctrlCancel mediumButton136Y">Cancel</div>
+		<div class="ctrlOK mediumButton136Y">OK</div>
+		<div class="dlgErrorBar"></div>
+	</div>
+
+	<div id="dlgSetDoctrine" class="mediumDialog" style="display:none">
+		<canvas class="ctrlDoctrineList ctrlLongList" height="330px" width="800px"></canvas>
+		<div class="ctrlDoctrineDesc"></div>
+		<div class="ctrlCancel mediumButton136Y">Cancel</div>
+		<div class="ctrlOK mediumButton136Y">Set Doctrine</div>
+		<div class="dlgErrorBar"></div>
+	</div>
+	
+	<div id="dlgUISettings" class="smallDialog" style="display:none">
+		<div class="dlgLabel ctrlLabel">Display Options</div>
+		<input class="dlgCheckbox ctrlShowManeuveringTrails" type="checkbox">Show maneuvering trails</input>
+		<div class="ctrlCancel mediumButton136Y">Cancel</div>
+		<div class="ctrlOK mediumButton136Y">OK</div>
+		<div class="dlgErrorBar"></div>
+	</div>
+
+	<div id="dlgSellResources" class="smallDialog" style="display:none">
+		<canvas class="ctrlResourceList ctrlFullCanvas" height="330px" width="446px"></canvas>
+		<div style='height:160px'></div>
+		<div class='dlgLabel'>Amount to sell per watch:</div>
+		<div class='dlgEditControl'><div class='editControlLeft'></div><input class='ctrlValue' style='width:354px; z-index:10;'/><div class='editControlRight'></div></div>
+		<div class="ctrlCancel mediumButton136Y">Cancel</div>
+		<div class="ctrlOK mediumButton136Y">Set</div>
+		<div class="dlgErrorBar"></div>
+	</div>
+	
+	<div id="dlgBuy" class="mediumDialog" style="display:none">
+		<canvas class="ctrlItemList ctrlFullCanvas" height="330px" width="800px"></canvas>
+		<div class="ctrlCancel mediumButton136Y">Cancel</div>
+		<div class="ctrlOK mediumButton136Y">Buy</div>
+		<div class="dlgErrorBar"></div>
+	</div>
+	
+	<div id="dlgFleetSell" class="smallDialog" style="display:none">
+		<canvas class="ctrlOptionList ctrlFullCanvas" height="330px" width="446px"></canvas>
+		<div style='height:160px'></div>
+		<div class="ctrlCancel mediumButton136Y">Cancel</div>
+		<div class="ctrlOK mediumButton136Y">Sell</div>
+		<div class="dlgErrorBar"></div>
+	</div>
+	
+	<div id="dlgFleetTransfer" class="smallDialog" style="display:none">
+		<canvas class="ctrlOptionList ctrlFullCanvas" height="330px" width="446px"></canvas>
+		<div style='height:160px'></div>
+		<div class="ctrlCancel mediumButton136Y">Cancel</div>
+		<div class="ctrlOK mediumButton136Y">Transfer</div>
+		<div class="dlgErrorBar"></div>
+	</div>
+
+	<!-- Resources -->
+	<img id="idMapIcons" src="res/MapIcons.png" style="display:none"/>
+	<img id="idTechLevelIcons" src="res/TechLevelIconsSmall.png" style="display:none"/>
+	<img id="idMediumButton136Yellow" src="res/MediumButton136Yellow.png" style="display:none"/>
+
+	<!-- Needed so that the font loads. -->
+	<div style="font-family: SansationBold; z-index:0">Test</div>
+</body>
+</html>

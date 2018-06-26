@@ -1,0 +1,1551 @@
+//	AnacreonPackage.ars
+//
+//	Anacreon Service
+//	Copyright (c) 2012-2013 by Kronosaur Productions, LLC. All Rights Reserved.
+
+Arc.package Anacreon
+	{
+	version:	"Era 4.2 (2018.06.23)"
+	}
+
+include messages Anacreon.command
+
+Include "Console.ars"
+
+/* -----------------------------------------------------------------------------
+	TABLES
+----------------------------------------------------------------------------- */
+
+//	Anacreon.files
+//
+//	This table keeps all game files
+//
+//	FilePaths are of the following form:
+//
+//	/Anacreon.files/save/{gameID}
+
+Arc.table Anacreon.files
+	{
+	type: file
+	}
+	
+//	Anacreon.games
+//
+//	Data: gameRecord structure
+//	http://kronosaur.com/design/wiki/index.php/Interface_of_Anacreon_Service
+//
+//	This table keeps track of all the games that currently exist.
+
+Arc.table Anacreon.games
+	{
+	x: { keyType:utf8 }
+
+	secondaryViews: (
+		{ name:openGamesByCreationTime
+			x: {
+				key: (lambda (data) (if (@ data 'playerInviteOpen) (@ data 'creationTime) nil))
+				keyType: dateTime
+				keySort: descending
+				}
+
+			columns: (primaryKey *)
+			excludeNilKeys: true
+			}
+		)
+	}
+
+//	Anacreon.gamesAndPlayers
+//
+//	Data: gameAndPlayer structure
+//
+//	This table keeps a row for every game that every player is involved in.
+//	It is indexed by username and gameID
+
+Arc.table Anacreon.gamesAndPlayers
+	{
+	x: { keyType:utf8 }
+	y: { keyType:utf8 }
+
+	secondaryViews: (
+		{ name:byGameIDAndPlayer
+			x: { key:gameID keyType:utf8 }
+			y: { key:player keyType:utf8 }
+
+			columns: (gameID player lastAccessTime)
+			}
+
+		{ name:byUsernameAndLastAccessed
+			x: { key:player keyType:utf8 }
+			y: { key:lastAccessTime keyType:dateTime keySort:descending }
+
+			columns: (gameID player lastAccessTime)
+			excludeNilKeys: true
+			}
+		)
+	}
+
+/* -----------------------------------------------------------------------------
+	ANACREON.API SERVICE
+----------------------------------------------------------------------------- */
+
+Arc.service Anacreon.api
+	{
+	name:		"Anacreon API"
+	
+	protocol:	http
+	port:		80
+	hosts:		(anacreon.benedict.com anacreon.kronosaur.com anacreon2.kronosaur.com)
+	urlPaths:	"/api/"
+	
+	service:	hexcode
+	output:		"application/json"
+	}
+
+//	/api/abdicate --------------------------------------------------------------
+//
+//	authToken: Authentication
+//	gameID: Game
+//	sovereignID: Sovereign ordering retreat
+//	sequence: Last sequence
+
+function Anacreon.api+abdicate (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.abdicate
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'sequence)
+			)
+		)
+	)
+
+//	/api/abortAttack -----------------------------------------------------------
+//
+//	authToken: Authentication
+//	gameID: Game
+//	sovereignID: Sovereign ordering retreat
+//	battleFieldID: ID of battle field
+//	sequence: Last sequence
+
+function Anacreon.api+abortAttack (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.abortAttack
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'battleFieldID)
+			(@ message 'sequence)
+			)
+		)
+	)
+
+//	/api/attack ----------------------------------------------------------------
+//
+//	battlePlan: A struct with the following elements:
+//		battleFieldID: ID of battle location
+//		enemySovereignIDs: List of IDs of all sovereigns to treat as enemies
+//		objective: One of:
+//			invasion: Conquer world
+//			spaceSupremacy: Destroy all enemy units
+
+function Anacreon.api+attack (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.attack
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'battlePlan)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/buildImprovement ------------------------------------------------------
+
+function Anacreon.api+buildImprovement (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.buildImprovement
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'sourceObjID)
+			(@ message 'improvementID)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/buyItem ---------------------------------------------------------------
+//
+//	authToken: Authentication
+//	gameID: The gameID
+//	sovereignID: Sovereign giving order
+//	sourceObjID: ID of world selling the item
+//	itemID: ID of the resource type we're buying
+//	itemCount: Number of items to buy
+//	sequence: Latest sequence known to the client.
+
+function Anacreon.api+buyItem (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.buyItem
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'sourceObjID)
+			(@ message 'itemID)
+			(@ message 'itemCount)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/changePassword --------------------------------------------------------
+//
+//	Logs in. The inputs are:
+//
+//	oldPassword: If present, this is the clear-text user password
+//	newPassword: If present, this is the clear-text user password
+//	username: The username.
+
+function Anacreon.api+changePassword (lambda (URL method headers message)
+	(block (
+		(multiverseChangePassword (apiGetMultiverseFunction 'multiverse.apiChangePassword))
+		)
+
+		(multiverseChangePassword (@ message 'username) {
+			oldPassword: (@ message 'oldPassword)
+			newPassword: (@ message 'newPassword)
+			})
+		)
+	)
+	
+//	/api/createGame ------------------------------------------------------------
+//
+//	authToken: User authToken
+//	gameName: The name of the new game to create
+//	joinInstructions: Instructions for players joining the game.
+//	playerInvite: Invitation setting.
+//	players: List of players.
+//	scenarioID: Scenario to create.
+//
+//	Returns a gameID.
+
+function Anacreon.api+createGame (lambda (URL method headers message)
+	(block (gameID)
+		
+		(apiValidateAuthToken (@ message 'authToken))
+
+		//	Create the game
+		
+		(set! gameID
+			(invoke 'Anacreon.createGame {
+				creator: (userGetName)
+				playerInvite: (@ message 'playerInvite)
+				players: (@ message 'players)
+				gameName: (@ message 'gameName)
+				joinInstructions: (@ message 'joinInstructions)
+
+				scenarioFileRoot: "#Multiverse.hexarc/Anacreon/"
+				scenarioID: (@ message 'scenarioID)
+				scenarioRelease: (@ message 'scenarioRelease)
+				})
+			)
+
+		//	Add a game entry for all players
+
+		(enum (@ message 'players) thePlayer
+			(apiSetGameAccess (lowercase thePlayer) gameID 'createEntry)
+			)
+
+		//	Return the gameID
+
+		gameID
+		)
+	)
+	
+//	/api/deployFleet -----------------------------------------------------------
+
+function Anacreon.api+deployFleet (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.deployFleet
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'sourceObjID)
+			(@ message 'resources)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/designateWorld --------------------------------------------------------
+	
+function Anacreon.api+designateWorld (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.designateWorld
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'sourceObjID)
+			(@ message 'newDesignation)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/destroyImprovement ----------------------------------------------------
+
+function Anacreon.api+destroyImprovement (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.destroyImprovement
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'sourceObjID)
+			(@ message 'improvementID)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/disbandFleet ----------------------------------------------------------
+
+function Anacreon.api+disbandFleet (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.disbandFleet
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'fleetObjID)
+			(@ message 'destObjID)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/gameList --------------------------------------------------------------
+//
+//	authToken: Authorization token for user.
+//	countOnly: If TRUE we return the count of games
+//
+//	Returns list of gameRecord structures.
+
+function Anacreon.api+gameList (lambda (URL method headers message)
+	(block (authToken allGames usernameKey)
+
+		(set! authToken (apiValidateAuthToken (@ message 'authToken)))
+		(set! usernameKey (lowercase (@ authToken 'username)))
+
+		//	Get the list of games for this player
+
+		(set! allGames
+			(invoke 'Aeon.getRows (list 'Anacreon.gamesAndPlayers 'byUsernameAndLastAccessed) usernameKey '(10 1) 'noKey)
+			)
+
+		//	Result
+
+		(switch
+
+			//	Count only?
+
+			(@ message 'countOnly)
+				(count allGames)
+
+			//	Else, return game records
+			//	Compose gameRecord structures by loading each gameRecord
+		
+			(map allGames 'excludeNil theEntry
+				(block (gameRecord)
+					(set! gameRecord (invoke 'Aeon.getValue 'Anacreon.games (@ theEntry 'gameID)))
+
+					(if gameRecord
+						{
+							gameID: (@ theEntry 'gameID)
+							lastAccessTime: (@ theEntry 'lastAccessTime)
+							name: (@ gameRecord 'name)
+							description: (@ gameRecord 'joinInstructions)
+							playerCount: (@ gameRecord 'playerCount)
+							scenarioID: (@ gameRecord 'scenarioID)
+							scenarioName: (@ gameRecord 'scenarioName)
+							scenarioRelease: (@ gameRecord 'scenarioRelease)
+							updateCount: (@ gameRecord 'updateCount)
+							}
+						)
+					)
+				)
+			)
+		)
+	)
+
+//	/api/getGameJoinInfo -------------------------------------------------------
+//
+//	authToken: A valid user authToken.
+//	gameID: The gameID.
+
+function Anacreon.api+getGameJoinInfo (lambda (URL method headers message)
+	(block (authToken gameID gameRecord multiverseGetCatalogEntry scenarioInfo scenarioRecord sovereigns userInfo usernameKey)
+
+		(set! multiverseGetCatalogEntry (apiGetMultiverseFunction 'multiverse.getCatalogEntry))
+
+		(set! authToken (apiValidateAuthToken (@ message 'authToken)))
+		(set! usernameKey (lowercase (@ authToken 'username)))
+		(set! gameID (@ message 'gameID))
+
+		//	Get the game record
+
+		(set! gameRecord (invoke 'Aeon.getValue 'Anacreon.games gameID))
+
+		//	Get the scenario info
+
+		(set! scenarioRecord (multiverseGetCatalogEntry 
+			usernameKey
+			(@ authToken 'rights)
+			(apiIDToUNID (@ gameRecord 'scenarioID))
+			(@ gameRecord 'scenarioRelease)
+			nil
+			))
+
+		//	Return the game info
+
+		(if (|| (not gameRecord) (not scenarioRecord))
+			nil
+
+			{	gameID: gameID
+				lastAccessTime: (@ gameRecord 'lastAccessTime)
+				name: (@ gameRecord 'name)
+				playerCount: (@ gameRecord 'playerCount)
+				scenarioID: (@ gameRecord 'scenarioID)
+				scenarioRelease: (@ gameRecord 'scenarioRelease)
+				updateCount: (@ gameRecord 'updateCount)
+
+				scenarioInfo: scenarioRecord
+				}
+			)
+		)
+	)
+	
+//	/api/getGameInfo -----------------------------------------------------------
+//
+//	authToken: A valid user authToken.
+//	gameID: The gameID.
+
+function Anacreon.api+getGameInfo (lambda (URL method headers message)
+	(block (authToken gameID scenarioInfo sovereigns userInfo usernameKey)
+
+		(set! authToken (apiValidateAuthToken (@ message 'authToken)))
+		(set! usernameKey (lowercase (@ authToken 'username)))
+		(set! gameID (@ message 'gameID))
+
+		//	Get all the info from the engine
+
+		(set! scenarioInfo (invoke 'Anacreon.getScenarioInfo gameID))
+		(set! sovereigns (invoke 'Anacreon.getSovereigns gameID))
+		(set! userInfo (invoke 'Anacreon.getUserInfo gameID))
+
+		//	If this is a player of the game, then update the player record
+
+		(if userInfo
+			(apiSetGameAccess usernameKey gameID)
+			)
+
+		//	Return the game info
+
+		{	scenarioInfo: scenarioInfo
+			sovereigns: sovereigns
+			userInfo: userInfo
+			}
+		)
+	)
+
+//	/api/getGameLog ------------------------------------------------------------
+//
+//	authToken: A valid user authToken.
+//	gameID: The gameID.
+//	sequence: Log sequence number
+
+function Anacreon.api+getGameLog (lambda (URL method headers message)
+	(block (
+		(authToken (apiValidateAuthToken (@ message 'authToken)))
+		(usernameKey (lowercase (@ authToken 'username)))
+		(gameID (@ message 'gameID))
+		(seq (@ message 'sequence))
+
+		(result (invoke 'Anacreon.getGameLog gameID seq))
+		)
+		(switch
+			//	If we have a result, then return it
+
+			result
+				result
+
+			//	Otherwise, see if the game is closed	
+
+			(not (invoke 'Anacreon.getGameStatus gameID))
+				{
+					status: 'closed
+					}
+
+			;	Unknown game
+
+			Nil
+			)
+		)
+	)
+
+//	/api/getObjects ------------------------------------------------------------
+
+function Anacreon.api+getObjects (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.getObjects 
+			(@ message 'gameID) 
+			(@ message 'sovereignID) 
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/getTactical -----------------------------------------------------------
+
+function Anacreon.api+getTactical (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.getTactical
+			(@ message 'gameID) 
+			(@ message 'sovereignID) 
+			(@ message 'objID)
+			)
+		)
+	)
+	
+//	/api/joinGame --------------------------------------------------------------
+//
+//	authToken: User authToken
+//	capitalName: The name of the capital.
+//	gameID: GameID to join.
+//	leaderGenome: The genome of the leader ("humanMale" or "humanFemale").
+//	leaderName: The name of the leader.
+//	sovereignName: The name of the sovereign/empire.
+//	username: The player joining the game.
+
+//	players: List of players.
+//
+//	Returns a gameID.
+
+function Anacreon.api+joinGame (lambda (URL method headers message)
+	(block (gameID newPlayer)
+		
+		(apiValidateAuthToken (@ message 'authToken))
+		(set! gameID (@ message 'gameID))
+		(set! newPlayer (lowercase (@ message 'username)))
+
+		//	Join the game
+
+		(invoke 'Anacreon.joinGame gameID 
+			{
+				player: newPlayer
+
+				leaderName: (@ message 'leaderName)
+				leaderGenome: (@ message 'leaderGenome)
+				sovereignName: (@ message 'sovereignName)
+				capitalName: (@ message 'capitalName)
+				}
+			)
+
+		//	Add a game entry for the player
+
+		(apiSetGameAccess newPlayer gameID 'createEntry)
+		
+		//	Return the gameID
+
+		gameID
+		)
+	)
+
+//	/api/launchLAMs ------------------------------------------------------------
+//
+//	gameID: The gameID.
+//	sovereignID: Sovereign asking to set route.
+//	objID: Object that is launching.
+//	targetObjID: Object that is the target.
+//	sequence: Latest sequence known to the client.
+
+function Anacreon.api+launchLAMs (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.launchLAMs
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'objID)
+			(@ message 'targetObjID)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/leaveGame -------------------------------------------------------------
+//
+//	authToken: User authToken
+//	gameID: GameID to leave.
+
+function Anacreon.api+leaveGame (lambda (URL method headers message)
+	(block (authToken gameID usernameKey)
+		
+		(set! authToken (apiValidateAuthToken (@ message 'authToken)))
+		(set! usernameKey (lowercase (@ authToken 'username)))
+		(set! gameID (@ message 'gameID))
+
+		//	Leave the game
+
+		(invoke 'Anacreon.leaveGame gameID usernameKey)
+
+		//	Delete game entry for the player
+
+		(invoke 'Aeon.insert 'Anacreon.gamesAndPlayers (list usernameKey gameID) nil)
+		)
+	)
+	
+//	/api/login -----------------------------------------------------------------
+//
+//	Logs in. The inputs are:
+//
+//	actual: If true, then we provided the actual user credentials
+//	challengeCredentials: If present, these are the credentials+challenge.
+//	password: If present, this is the clear-text user password
+//	username: The username.
+
+function Anacreon.api+login (lambda (URL method headers message)
+	(block (
+		(multiverseLogin (apiGetMultiverseFunction 'multiverse.apiLogin))
+		)
+
+		(multiverseLogin (@ message 'username) {
+			actual: (@ message 'actual)
+			challengeCredentials: (@ message 'challengeCredentials)
+			password: (@ message 'password)
+			})
+		)
+	)
+	
+//	/api/openGameList ----------------------------------------------------------
+//
+//	authToken: Authorization token for user.
+//	countOnly: If TRUE we return the count of games
+//
+//	Returns list of gameRecord structures.
+
+function Anacreon.api+openGameList (lambda (URL method headers message)
+	(block (authToken allGames usernameKey)
+
+		(set! authToken (apiValidateAuthToken (@ message 'authToken)))
+		(set! usernameKey (lowercase (@ authToken 'username)))
+
+		//	Get the list of open games, filtering out any games that we are
+		//	already part of.
+
+		(set! allGames 
+			(map (invoke 'Aeon.getRows (list 'Anacreon.games 'openGamesByCreationTime) nil '(10) 'noKey) 'excludeNil gameRecord
+				(if (invoke 'Aeon.getValue 
+						'Anacreon.gamesAndPlayers
+						(list usernameKey (@ gameRecord 'gameID))
+						)
+					nil
+					gameRecord
+					)
+				)
+			)
+
+		//	Result
+
+		(switch
+
+			//	Count only?
+
+			(@ message 'countOnly)
+				(count allGames)
+
+			//	Else, return game records
+		
+			(map allGames 'excludeNil theEntry
+				{
+					gameID: (@ theEntry 'gameID)
+					lastAccessTime: (@ theEntry 'lastAccessTime)
+					name: (@ theEntry 'name)
+					joinInstructions: (@ theEntry 'joinInstructions)
+					playerCount: (@ theEntry 'playerCount)
+					scenarioID: (@ theEntry 'scenarioID)
+					scenarioName: (@ theEntry 'scenarioName)
+					scenarioRelease: (@ theEntry 'scenarioRelease)
+					updateCount: (@ theEntry 'updateCount)
+					}
+				)
+			)
+		)
+	)
+	
+//	/api/register --------------------------------------------------------------
+//
+//	Registers a new account. The inputs are:
+//
+//	credentials: If present, this is the hashed password
+//	email: If present, this is the user's email address
+//	password: If present, this is the clear-text user password
+//	username: The username.
+
+function Anacreon.api+register (lambda (URL method headers message)
+	(block (
+		(multiverseRegister (apiGetMultiverseFunction 'multiverse.apiRegister))
+		)
+
+		(multiverseRegister (@ message 'username) {
+			credentials: (@ message 'credentials)
+			email: (@ message 'email)
+			password: (@ message 'password)
+			})
+		)
+	)
+	
+//	/api/renameObject ----------------------------------------------------------
+//
+//	authToken:
+//	gameID:
+//	sovereignID:
+//	objID: Object being renamed
+//	name: New name of object
+//	sequence:
+
+function Anacreon.api+renameObject (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.renameObject
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'objID)
+			(@ message 'name)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/requestLogin ----------------------------------------------------------
+//
+//	actual: If TRUE then we want actual user (as opposed to sandboxed log in).
+//	username: User requesting log in.
+	
+function Anacreon.api+requestLogin (lambda (URL method headers message)
+
+	(invoke 'Cryptosaur.requestLogin (@ message 'username) (@ message 'actual))
+	)
+	
+//	/api/scenarioList ----------------------------------------------------------
+//
+//	authToken: Authorization token for user.
+//
+//	Returns list of scenarioSummary structures.
+
+function Anacreon.api+scenarioList (lambda (URL method headers message)
+	(block (
+		(multiverseListCatalog (apiGetMultiverseFunction 'multiverse.listCatalog))
+		
+		(allScenarios nil)
+		)
+
+		//	We allow this method even if no one is signed in
+
+		(if (@ message 'authToken)
+			(apiValidateAuthToken (@ message 'authToken))
+			(userSet nil)
+			)
+
+		//	Get the catalog from the Multiverse
+		
+		(set! allScenarios (multiverseListCatalog (userGetName) (userGetRights) (userGetName) nil nil 'anacreonScenario))
+		
+		//	Compose scenarioSummary structures
+		
+		(map allScenarios nil theEntry
+			{
+				coverIconURL: ""
+				createInstructions: "<p>It may be better to reign in Hell than serve in Heaven but you were never given the choice. After the fall of the mighty Aelion Galactic Empire you must carve out whatever peace and prosperity you can out of the savage chaos left behind.</p><p>Fallen Worlds is a scenario for 1 to 1,000 players.</p>"
+				description:			(@ theEntry 'description)
+				developers:				(list "overlord")
+				difficulty:				'beginner
+				gamesCreated:			0
+				invite:					'open
+				isPublic:				true
+				mapSize:				(list 1000 1000)
+				name:					(@ theEntry 'name)
+				players:				(list 1 1000)
+				scenarioID:				(apiUNIDToID (@ theEntry 'unid))
+				scenarioRelease:		(@ theEntry 'release)
+				world:					25000
+				}
+			)
+		)
+	)
+	
+//	/api/sellFleet -------------------------------------------------------------
+//
+//	authToken: Authorization token
+//	gameID: The gameID
+//	sovereignID: Sovereign giving order
+//	objID: Fleet being sold
+//	buyerObjID: ID of worlds we're selling to
+//	resources: List of resources we're selling
+
+function Anacreon.api+sellFleet (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.sellFleet
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'objID)
+			(@ message 'buyerObjID)
+			(@ message 'resources)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/sendMessage -----------------------------------------------------------
+//
+//	authToken: Authorization token
+//	gameID: The gameID
+//	sovereignID: Sovereign giving order
+//	recipientID: ID of sovereign to send message to
+//	messageText: Text of message
+
+function Anacreon.api+sendMessage (lambda (URL method headers message)
+	(block (
+		(sovereignID (@ message 'sovereignID))
+		(recipientID (@ message 'recipientID))
+		)
+		(apiValidateAuthToken (@ message 'authToken))
+
+		//	Validate to make sure special values are not being used
+
+		(if (|| (= recipientID 0) 
+				(= recipientID 'online)
+				(= sovereignID 0))
+			(error 'inputError "Invalid parameters.")
+			)
+
+		//	Send
+
+		(invoke 'Anacreon.sendMessage
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'recipientID)
+			(@ message 'messageText)
+			)
+		)
+	)
+	
+//	/api/setDestination --------------------------------------------------------
+
+function Anacreon.api+setDestination (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.setDestination
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'objID)
+			(@ message 'dest)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/setDoctrine -----------------------------------------------------------
+//
+//	authToken: Authentication
+//	gameID: The gameID
+//	sovereignID: Sovereign giving order
+//	newDoctrine: ID of new doctrine to set
+//	sequence: Latest sequence known to the client.
+
+function Anacreon.api+setDoctrine (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.setDoctrine
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'newDoctrine)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/setHistoryRead --------------------------------------------------------
+//
+//	gameID: The gameID
+//	sovereignID: Sovereign giving order
+//	historyID: ID of history to read.
+
+function Anacreon.api+setHistoryRead (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.setHistoryRead
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'historyID)
+			)
+		)
+	)
+	
+//	/api/setIndustryAlloc ------------------------------------------------------
+//
+//	gameID: The gameID.
+//	sovereignID: Sovereign asking to set route.
+//	objID: Object that is importing.
+//	industryID: The ID of the industry type that we're setting
+//	allocValue: Percent value. (nil if importing all)
+//	sequence: Latest sequence known to the client.
+
+function Anacreon.api+setIndustryAlloc (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.setIndustryAlloc
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'objID)
+			(@ message 'industryID)
+			(@ message 'allocValue)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/setProductAlloc -------------------------------------------------------
+//
+//	gameID: The gameID.
+//	sovereignID: Sovereign asking to set route.
+//	objID: Object that is importing.
+//	industryID: The ID of the industry type that we're setting
+//	alloc: Array of resType and alloc value pairs
+//	sequence: Latest sequence known to the client.
+
+function Anacreon.api+setProductAlloc (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.setProductAlloc
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'objID)
+			(@ message 'industryID)
+			(@ message 'alloc)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/setTradeRoute ---------------------------------------------------------
+//
+//	gameID: The gameID.
+//	sovereignID: Sovereign asking to set route.
+//	objID: Object that is importing.
+//	sourceObjID: Object that is exporting.
+//	resType: Resource type ID being imported (nil if importing all)
+//	allocType: Either "production", "consumption", or "tech" (nil if importing all)
+//	allocValue: Percent value (or target tech level for "tech"). (nil if importing all)
+//	sequence: Latest sequence known to the client.
+
+function Anacreon.api+setTradeRoute (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.setTradeRoute
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'objID)
+			(@ message 'sourceObjID)
+			(@ message 'resType)
+			(@ message 'allocType)
+			(@ message 'allocValue)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/setUIOptions ----------------------------------------------------------
+//
+//	authToken: Authorization token
+//	gameID: The gameID
+//	sovereignID: Sovereign giving order
+//	uiOptions: Structure of UI options to store
+
+function Anacreon.api+setUIOptions (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.setUIOptions
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'uiOptions)
+			)
+		)
+	)
+	
+//	/api/stopTradeRoute --------------------------------------------------------
+//
+//	gameID: The gameID.
+//	sovereignID: Sovereign asking to set route.
+//	objID: Object that is importing.
+//	sourceObjID: Object that is exporting.
+//	sequence: Latest sequence known to the client.
+
+function Anacreon.api+stopTradeRoute (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.stopTradeRoute
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'objID)
+			(@ message 'sourceObjID)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+//	/api/tacticalOrder ---------------------------------------------------------
+//
+//	gameID: The gameID
+//	sovereignID: Sovereign making the order
+//	objID: Object that owns the tactical field
+//	tacticalID: ID of tactical object
+//	order: One of:
+//
+//	"orbit": Sets orbit of tactical object
+//
+//	orbit: Radius of orbit (from center of planet, in megameters)
+//
+//	"target": Sets the target of the given object
+//
+//	targetID: The ID of the new target
+
+function Anacreon.api+tacticalOrder (lambda (URL method header message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.tacticalOrder
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'objID)
+			(@ message 'tacticalID)
+			(@ message 'order)
+
+			//	We include all possible parameters in a data field.
+			{
+				orbit: (@ message 'orbit)
+				targetID: (@ message 'targetID)
+				}
+			)
+		)
+	)
+
+//	/api/transferFleet ---------------------------------------------------------
+
+function Anacreon.api+transferFleet (lambda (URL method headers message)
+	(block nil
+		(apiValidateAuthToken (@ message 'authToken))
+
+		(invoke 'Anacreon.transferFleet
+			(@ message 'gameID)
+			(@ message 'sovereignID)
+			(@ message 'fleetObjID)
+			(@ message 'destObjID)
+			(@ message 'resources)
+			(@ message 'sequence)
+			)
+		)
+	)
+	
+/* -----------------------------------------------------------------------------
+	ANACREON.WEB SERVICE
+----------------------------------------------------------------------------- */
+
+Arc.service Anacreon.web
+	{
+	name:		"Anacreon"
+	
+	protocol:	http
+	port:		80
+	hosts:		(anacreon.benedict.com anacreon.kronosaur.com anacreon2.kronosaur.com)
+	urlPaths:	"/"
+	
+	service:	www
+	filePaths:	"/Site/"
+	defaultFile:	"index.hexm"
+	}
+	
+/* -----------------------------------------------------------------------------
+	HELPER FUNCTIONS
+----------------------------------------------------------------------------- */
+
+(define apiGetGameJoinInfo (lambda (username gameID)
+	(block (gameRecord multiverseGetCatalogEntry scenarioInfo scenarioRecord sovereigns userInfo usernameKey)
+
+		(set! multiverseGetCatalogEntry (apiGetMultiverseFunction 'multiverse.getCatalogEntry))
+		(set! usernameKey (lowercase username))
+
+		//	Get the game record
+
+		(set! gameRecord (invoke 'Aeon.getValue 'Anacreon.games gameID))
+		(if (not gameRecord)
+			(error 'error "Could not find game record.")
+			)
+
+		//	Get the scenario info
+
+		(set! scenarioRecord (multiverseGetCatalogEntry 
+			(@ gameRecord 'creator)
+			nil
+			(apiIDToUNID (@ gameRecord 'scenarioID))
+			(@ gameRecord 'scenarioRelease)
+			nil
+			))
+		(if (not scenarioRecord)
+			(error 'error (cat "Could not find scenario record: " (@ gameRecord 'scenarioRelease)))
+			)
+
+		//	Return the game info
+
+		(if (|| (not gameRecord) (not scenarioRecord))
+			nil
+
+			{	gameID: gameID
+				creator: (@ gameRecord 'creator)
+				lastAccessTime: (@ gameRecord 'lastAccessTime)
+				name: (@ gameRecord 'name)
+				playerCount: (@ gameRecord 'playerCount)
+				joinInstructions: (@ gameRecord 'joinInstructions)
+				scenarioID: (@ gameRecord 'scenarioID)
+				scenarioName: (@ gameRecord 'scenarioName)
+				scenarioRelease: (@ gameRecord 'scenarioRelease)
+				updateCount: (@ gameRecord 'updateCount)
+
+				scenarioInfo: scenarioRecord
+				}
+			)
+		)
+	))
+
+(define apiGetMultiverseFunction (lambda (theFunction)
+	(block (theCommandInfo)
+		(if (not (set! theCommandInfo (srvFindCommand theFunction 'multiverse.export)))
+			(error 'error (cat "Unable to find " theFunction " function."))
+			)
+
+		(@ theCommandInfo 'code)
+		)
+	))
+
+(define apiGetScenarioInfo (lambda (username scenaID scenaRelease)
+	(block (multiverseGetCatalogEntry scenarioRecord usernameKey)
+
+		(set! multiverseGetCatalogEntry (apiGetMultiverseFunction 'multiverse.getCatalogEntry))
+		(set! usernameKey (lowercase username))
+
+		//	Compose the scenario record
+
+		(switch
+
+			//	If we can't get the scenario info then we return an error.
+
+			(not (set! scenarioRecord (multiverseGetCatalogEntry 
+					usernameKey
+					nil
+					(apiIDToUNID scenaID)
+					scenaRelease
+					nil
+					)))
+				{
+					scenarioID: scenaID
+					scenarioRelease: scenaRelease
+					error: (cat "Cannot find " scenaID " in your collection.")
+					}
+
+			//	Return the scenario info
+
+			{
+				scenarioID: scenaID
+				scenarioRelease: scenaRelease
+				name: (@ scenarioRecord 'name)
+				createInstructions: (@ scenarioRecord 'description)
+				}
+			)
+		)
+	))
+	
+(define apiIDToUNID (lambda (id)
+	(cat "Anacreon:" id)
+	))
+
+(define apiSetGameAccess (lambda (usernameKey gameID createEntry)
+	(block ()
+		(invoke 'Aeon.mutate 'Anacreon.gamesAndPlayers (list usernameKey gameID)
+			(if createEntry
+				{ gameID:gameID player:usernameKey }
+				{ }
+				)
+			{ lastAccessTime: 'dateModified }
+			)
+
+		//	Mark the player as an anacreon player
+
+		(invoke 'Cryptosaur.addRights usernameKey 'anacreon.player)
+		)
+	))
+	
+(define apiUNIDToID (lambda (unid)
+	(substring unid (length "Anacreon:"))
+	))
+
+(define apiValidateAuthToken (lambda (authToken)
+	(block (
+		(multiverseValidate (apiGetMultiverseFunction 'multiverse.apiValidateAuthToken))
+		(decodedAuthToken (multiverseValidate authToken))
+		)
+
+		//	Store the username and rights in the session. We guarantee to the
+		//	Anacreon Engine that we have authenticated the user.
+
+		(userSet (@ decodedAuthToken 'username) (@ decodedAuthToken 'rights))
+
+		decodedAuthToken
+		)
+	))
+
+(define utlArticleBody (lambda (articleEntry)
+	(block (
+		(multiverseGetArticleMarkup (apiGetMultiverseFunction 'multiverse.getArticleMarkup))
+		)
+
+		(multiverseGetArticleMarkup articleEntry {
+			width: 554
+			})
+		)
+	))
+
+(define utlArticleSidebar (lambda (articleEntry)
+	(block (
+		(multiverseGetArticleSidebarMarkup (apiGetMultiverseFunction 'multiverse.getArticleSidebarMarkup))
+		)
+
+		(multiverseGetArticleSidebarMarkup articleEntry {
+			})
+		)
+	))
+
+(define utlDeleteGame (lambda (gameID)
+	(switch
+
+		//	Make sure the game is closed
+
+		(invoke 'Anacreon.getGameStatus gameID)
+			(cat "Game " gameID " is still open.")
+
+		//	Delete
+
+		(block (result filePath)
+
+			//	Delete the main game entry
+
+			(if (invoke 'Aeon.getValue 'Anacreon.games gameID)
+				(block nil
+					(invoke 'Aeon.insert 'Anacreon.games gameID nil)
+					(set! result (cat "Deleted Anacreon.games " gameID "."))
+					)
+				)
+
+			//	Delete the save file
+
+			(set! filePath (cat "/Anacreon.files/save/" gameID))
+			(if (invoke 'Aeon.fileDirectory filePath)
+				(block nil
+					(invoke 'Aeon.fileUpload filePath { } nil)
+					(set! result (cat result "\nDeleted " filePath "."))
+					)
+				)
+
+			//	Delete all the player rows
+
+			(enum (invoke 'Aeon.getRows (list 'Anacreon.gamesAndPlayers 'byGameIDAndPlayer) gameID '(0 1) 'noKey) theEntry
+				(block nil
+					(invoke 'Aeon.insert 'Anacreon.gamesAndPlayers (list (@ theEntry 'player) gameID) nil)
+					(set! result (cat result "\nDeleted Anacreon.gamesAndPlayers " (@ theEntry 'player) "/" gameID))
+					)
+				)
+
+			//	If we deleted nothing, then say so
+
+			(if (not result)
+				(set! result (cat "Anacreon game " gameID " not found."))
+				)
+
+			//	Done
+
+			result
+			)
+		)
+	))
+
+/* -----------------------------------------------------------------------------
+	HEXM HELPER FUNCTIONS
+----------------------------------------------------------------------------- */
+
+(define gUserInfo nil)
+
+//	anacreonPageCommonDialogs --------------------------------------------------
+//
+//	Used to defined common dialogs such as sign in.
+
+(define anacreonCommonDialogs (lambda ()
+	(html (cat
+			"<div id='pageCover'></div>"
+
+			(if (not gUserInfo)
+				(cat
+					"<div id='dlgSignIn' class='smallDialog' style='display:none'>"
+						"<div class='dlgLabel'>Username:</div>"
+						"<div class='dlgEditControl'><div class='editControlLeft'></div><input class='ctrlName' style='width:354px'/><div class='editControlRight'></div></div>"
+						"<div class='dlgLabel'>Password:</div>"
+						"<div class='dlgEditControl'><div class='editControlLeft'></div><input class='ctrlPassword' style='width:354px' type='password'/><div class='editControlRight'></div></div>"
+						"<div class='ctrlRegister dlgLinkAbs' style='top:214px; left:50px;'>Register a new account</div>"
+						"<div class='ctrlResetPassword dlgLinkAbs' style='top:236px; left:50px;'>Forgot my password</div>"
+						"<div class='ctrlCancel largeButton' style='top:326px; left:248px'><p>Cancel</p></div>"
+						"<div class='ctrlOK largeButton' style='top:326px; left:92px'><p>Sign In</p></div>"
+						"<div class='dlgErrorBar' style='top:326px; left:-300px; display:none'></div>"
+					"</div>"
+
+					"<div id='dlgRegister' class='dialog476x580' style='display:none'>"
+						"<div class='dlgLabel'>Username:</div>"
+						"<div class='dlgEditControl'><div class='editControlLeft'></div><input class='ctrlName' style='width:354px'/><div class='editControlRight'></div></div>"
+						"<div class='dlgLabel'>Password:</div>"
+						"<div class='dlgEditControl'><div class='editControlLeft'></div><input class='ctrlPassword' style='width:354px' type='password'/><div class='editControlRight'></div></div>"
+						"<div class='dlgLabel'>Confirm Password:</div>"
+						"<div class='dlgEditControl'><div class='editControlLeft'></div><input class='ctrlConfirmPassword' style='width:354px' type='password'/><div class='editControlRight'></div></div>"
+						"<div class='dlgLabel'>Email:</div>"
+						"<div class='dlgEditControl'><div class='editControlLeft'></div><input class='ctrlEmail' style='width:354px'/><div class='editControlRight'></div></div>"
+						"<div class='ctrlSignIn dlgLinkAbs' style='top:358px; left:50px;'>I already have an account</div>"
+						"<div class='ctrlTOS dlgLinkAbs' style='top:380px; left:50px;'>Terms of Service</div>"
+
+						"<div class='ctrlCancel largeButton' style='top:432px; left:248px'><p>Cancel</p></div>"
+						"<div class='ctrlOK largeButton' style='top:432px; left:92px'><p>Register</p></div>"
+						"<div class='dlgErrorBar' style='top:432px; left:-300px; display:none'></div>"
+					"</div>"
+					)
+
+				(cat
+					"<div id='dlgChangePassword' class='smallDialog' style='display:none'>"
+						"<div class='dlgLabel'>Old Password:</div>"
+						"<div class='dlgEditControl'><div class='editControlLeft'></div><input class='ctrlOldPassword' style='width:354px' type='password'/><div class='editControlRight'></div></div>"
+						"<div class='dlgLabel'>New Password:</div>"
+						"<div class='dlgEditControl'><div class='editControlLeft'></div><input class='ctrlNewPassword' style='width:354px' type='password'/><div class='editControlRight'></div></div>"
+						"<div class='dlgLabel'>Confirm Password:</div>"
+						"<div class='dlgEditControl'><div class='editControlLeft'></div><input class='ctrlConfirmPassword' style='width:354px' type='password'/><div class='editControlRight'></div></div>"
+
+						"<div class='ctrlCancel largeButton' style='top:326px; left:248px'><p>Cancel</p></div>"
+						"<div class='ctrlOK largeButton' style='top:326px; left:92px'><p>Sign In</p></div>"
+						"<div class='dlgErrorBar' style='top:326px; left:-300px; display:none'></div>"
+					"</div>"
+					)
+				)
+
+			"<script type='text/javascript'>"
+
+			"  var _gaq = _gaq || [];"
+			"  _gaq.push(['_setAccount', 'UA-2664806-3']);"
+			"  _gaq.push(['_setDomainName', 'kronosaur.com']);"
+			"  _gaq.push(['_trackPageview']);"
+
+			"  (function() {"
+			"   var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;"
+			"   ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';"
+			"   var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);"
+			"  })();"
+
+			"</script>"
+			)
+		{
+			}
+		)
+	))
+	
+//	anacreonPageInit -----------------------------------------------------------
+//
+//	Evaluate this inside the <head> of all pages. The title may have the
+//	following escape strings:
+//
+//	%username%		The username, if a user-specific page
+	
+(define anacreonPageInit (lambda (pageTitle)
+	(block (authToken entryStatus entryType)
+		; Figure out if we're signed in and initialize userInfo
+		; If validation fails the gUserInfo is set to nil
+		
+		(set! authToken (httpGetCookie 'authToken))
+		(set! gUserInfo (apiValidateAuthToken authToken))
+		
+		; Generate common elements for <head>.
+		; We add some script initializing user info variables:
+		;
+		; $UserInfo.username = The currently signed-in user ("" if no one signed in).
+		; $UserInfo.usernameKey = The username as a key (i.e., lowercased)
+		; $UserInfo.rights = Array of rights for the current user.
+		; $UserInfo.authToken = Full authToken
+		
+		(html (cat
+				"<meta charset='utf-8'/>"
+				(if pageTitle (cat "<title>" pageTitle "</title>") "")
+				
+				; Common JavaScript includes
+				
+				"<script src='code/jquery-1.7.2.min.js'></script>"
+				"<script src='code/core.js'></script>"
+				"<script src='code/anacreon.js'></script>"
+				"<script src='code/auth.js'></script>"
+
+				; Common CSS includes
+				
+				"<link rel='stylesheet' href='css/anacreon.css'/>"
+				
+				; Initialize some JS variables based on the currenly signed-in
+				; user (so that scripts can access it).
+				
+				"<script>"
+					(if gUserInfo
+						(cat "var $UserInfo = new UserInfo(" (toJSON (@ gUserInfo 'username)) ", " (toJSON (@ gUserInfo 'rights)) ", " (toJSON authToken) "); ")
+						"var $UserInfo = null;"
+						)
+				"</script>"
+				)
+			{ 
+				username: (@ gUserInfo 'username)
+				}
+			)
+		)
+	))
+
+//	anacreonPageNotSignedInPlaceholder
+//
+//	This generates a simple paragraph reminding the user to sign int.
+
+(define anacreonPageNotSignedInPlaceholder (lambda ()
+	(if (not gUserInfo)
+		(html
+			"<p style='height:700px'>%text%</p>"
+			{
+				text: "Please sign in."
+				}
+			)
+
+		""
+		)
+	))
+	
+//	anacreonPageSignIn ---------------------------------------------------------
+//
+//	This generates HTML for the sign-in region of Anacreon lobby pages (not 
+//	within the game itself).
+
+(define anacreonPageSignIn (lambda ()
+	(html 
+		(if gUserInfo
+
+			//	User is signed in
+			(cat
+				"<div id='signInRegion'>"
+					"<div id='userImage'><img src='res/UserImageBlank.png'/></div>"
+					"<div id='userName'>%username%</div>"
+					"<div id='userAccountControls'><span id='btnChangePassword' onClick='changePasswordDialog()'>Change Password</span> &middot; <span id='btnSignOut' onClick='signOut()'>Sign Out</span></div>"
+					"<a id='headerLogo' href='index.hexm'></a>"
+				"</div>"
+				)
+
+			//	No user signed in
+			(cat
+				"<div id='signInRegion'>"
+					"<div id='userImage'><img src='res/UserImageBlank.png'/></div>"
+					"<div id='userName' style='cursor: pointer;' onClick='signInDialog()'>Sign In</div>"
+					"<a id='headerLogo' href='index.hexm'></a>"
+				"</div>"
+				)
+			)
+		{
+			username: (@ gUserInfo 'username)
+			}
+		)
+	))
+
+//	anacreonPageSiteMap --------------------------------------------------------
+//
+//	This generates HTML for the footer, which includes links to various parts
+//	of the full site.
+
+(define anacreonPageSiteMap (lambda ()
+	(cat
+		"<div class='siteMap'>"
+			"<div class='column'>"
+				"<h1>Player Information</h1>"
+				"<p>"
+					"<a href='article.hexm?id=401'>Quick Start Guide</a><br/>"
+					"<a href='article.hexm?id=359'>Beta Release Notes</a><br/>"
+					"Reference"
+				"</p>"
+				"<h1>Community</h1>"
+				"<p>"
+					"<a href='http://www.facebook.com/groups/64705270989/'>Anacreon Group on Facebook</a><br/>"
+					"<a href='http://neurohack.com/transcendence/forums/viewforum.php?f=48'>Forums</a>"
+				"</p>"
+			"</div>"
+			"<div class='column'>"
+				"<h1>Sets</h1>"
+				"<p>"
+					"Alpha Edition<br/>"
+					"Heavy Industries Expansion<br/>"
+					"Secret Weapons Expansion"
+				"</p>"
+			"</div>"
+			"<div class='column'>"
+				"<h1>About</h1>"
+				"<p>"
+					"Credits &amp; Thanks<br/>"
+					"<a href='http://kronosaur.com/'>Kronosaur Productions</a><br/>"
+					"<a href='doc_roadmap.hexm'>Release Roadmap</a><br/>"
+					"<a href='article.hexm?id=213'>Version History</a>"
+				"</p>"
+				"<h1>Previous Releases</h1>"
+				"<p>"
+					"<a href='http://neurohack.com/anacreon/'>Anacreon (Windows Release)</a><br/>"
+					"<a href='http://neurohack.com/anacreon/DOSEdition.html'>Anacreon (DOS Release)</a>"
+				"</p>"
+				"<h1>Other Games</h1>"
+				"<p>"
+					"<a href='http://transcendence-game.com/'>Transcendence</a>"
+				"</p>"
+			"</div>"
+		"</div>"
+		"<div class='copyright'>&copy; 2012-2016 Kronosaur Productions, LLC. All Rights Reserved.<br>Anacreon is a registered trademark of Kronosaur Productions.</div>"
+		)
+	))
