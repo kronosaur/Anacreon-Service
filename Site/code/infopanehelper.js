@@ -951,6 +951,23 @@ var InfoPaneHelper =
 			ctx.fillText("Siege", xText, yText);
 	
 			yText += $Style.tileFontLargeHeight;
+
+			//	Status
+
+			var statusText = siege.getStatusText();
+
+			ctx.font = $Style.tileFontMedium;
+			ctx.fillStyle = $Style.tileTextNormal;
+			ctx.fillText(statusText, xText, yText);
+			yText += $Style.tileFontMediumHeight;
+
+			//	Paint stats
+			
+			paintLine(xText, yText, cxText, "siege forces", $Anacreon.formatNumberAsFloat(siege.attackForces / 100.0, 1));
+			yText += $Style.tileFontMediumHeight;
+
+			paintLine(xText, yText, cxText, "defense forces", $Anacreon.formatNumberAsFloat(siege.defenseForces / 100.0, 1));
+			yText += $Style.tileFontMediumHeight;
 			}),
 			
 	paintSmallStat: (function (ctx, xPos, yPos, label, stat, statStyle)

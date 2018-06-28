@@ -921,6 +921,7 @@ TacticalStatusTile.prototype.onDraw = function (ctx, x, y, isHovering)
 
 	//	Draw the status title
 
+	var siege;
 	var title;
 	if (this.obj.battlePlan)
 		{
@@ -934,6 +935,10 @@ TacticalStatusTile.prototype.onDraw = function (ctx, x, y, isHovering)
 			title = "Retreating";
 		else
 			title = "Standing By";
+		}
+	else if (siege = this.obj.getSiege())
+		{
+		title = "Under Siege";
 		}
 	else
 		title = "Standing By";
@@ -955,6 +960,13 @@ TacticalStatusTile.prototype.onDraw = function (ctx, x, y, isHovering)
 		ctx.font = $Style.tileFontMedium;
 
 		$UI.drawText(ctx, xText, yText, this.cxWidth - 8, $Style.tileFontMediumHeight, this.obj.battlePlan.status);
+		}
+	else if (siege)
+		{
+		ctx.fillStyle = $Style.tileTextNormal;
+		ctx.font = $Style.tileFontMedium;
+
+		$UI.drawText(ctx, xText, yText, this.cxWidth - 8, $Style.tileFontMediumHeight, siege.getStatusText());
 		}
 
 	//	Draw the button
