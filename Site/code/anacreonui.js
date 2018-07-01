@@ -84,6 +84,7 @@ var $Style = {
 	tileNormalBackground: "#404040",
 	tileHoverBackground: "#808080",
 	tileErrorBackground: "#FF4040",
+	tileHighlightBackground: "#8080ff",
 	};
 
 //	BuildDataSelection ---------------------------------------------------------

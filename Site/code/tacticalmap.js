@@ -927,6 +927,8 @@ TacticalStatusTile.prototype.onDraw = function (ctx, x, y, isHovering)
 		{
 		if (this.obj.battlePlan.objective == "invasion")
 			title = "Invading " + this.obj.name;
+		else if (this.obj.battlePlan.objective == "reinforceSiege")
+			title = "Reinforcing Siege";
 		else if (this.obj.battlePlan.objective == "repelInvasion")
 			title = "Defending " + this.obj.name;
 		else if (this.obj.battlePlan.objective == "spaceSupremacy")
@@ -1022,7 +1024,14 @@ function TacticalHeaderTile (x, y, cxWidth, cyHeight, obj)
 	this.cxWidth = cxWidth;
 	this.cyHeight = cyHeight;
 
-	this.obj = obj;
+	//	For a siege object, this is the underlying world. We do the so that
+	//	the info pane is correct.
+
+	this.obj = obj.getSpaceObject();
+
+	//	But other things come directly from the object (e.g., the siege)
+
+	this.name = obj.name;
 	this.isForeign = (obj.sovereignID != $Anacreon.userInfo.sovereignID);
 	}
 
@@ -1035,7 +1044,7 @@ TacticalHeaderTile.prototype.onDraw = function (ctx, x, y, isHovering, isFaded)
 	ctx.fillStyle = (isFaded ? $Style.tileTextFaded : (this.isForeign ? $Style.mapEnemyUnit : $Style.mapFriendlyUnit));
 	ctx.textBaseline = "middle";
 	ctx.textAlign = "left";
-	ctx.fillText(this.obj.name, x + 8, y + (this.cyHeight - $Style.tileFontMediumHeight) / 2);
+	ctx.fillText(this.name, x + 8, y + (this.cyHeight - $Style.tileFontMediumHeight) / 2);
 	}
 
 TacticalHeaderTile.prototype.onMouseDown = function (e, xPos, yPos)

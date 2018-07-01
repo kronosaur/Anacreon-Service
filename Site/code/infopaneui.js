@@ -89,6 +89,9 @@ InfoPane.prototype.init = function (obj, paneToSelect, newSelection)
 	//	Figure out the tab panes for this object
 		
 	var objPaneList = (obj ? obj.getInfoPanes() : []);
+	if (paneToSelect == null && obj && obj.getInfoPaneDefaultSelect)
+		paneToSelect = obj.getInfoPaneDefaultSelect();
+
 	if (paneToSelect != null)
 		{
 		if (paneToSelect == -1)

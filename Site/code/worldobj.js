@@ -25,6 +25,7 @@
 //		maxLosses: % of losses at which we retreat
 //		objective: One of:
 //			invasion
+//			reinforceSiege
 //			repelInvasion
 //			retreat
 //			spaceSupremacy
@@ -788,11 +789,11 @@ WorldObject.prototype.drawGalacticMap = function (ctx, mapMetrics, x, y, pixelsP
 
 	//	Figure out what to draw
 
-	var hasWarning = (!isForeign && (this.getRebellion() != null || this.siegeObjID != null));
+	var newsIcon = this.getNewsStyle();
 	var drawName = (!isDisabled || !isForeign)
 			&& (maxRadius > 6
 				|| (maxRadius > 5 && (importance > 1 || !isForeign))
-				|| (maxRadius > 2 && (importance > 1 || hasWarning))
+				|| (maxRadius > 2 && (importance > 1 || newsIcon.style == "highlight"))
 				|| isSelected
 				|| this.isCapital);
 	var drawDesignationIcons = drawName
@@ -1006,9 +1007,8 @@ WorldObject.prototype.drawGalacticMap = function (ctx, mapMetrics, x, y, pixelsP
 	if (drawName)
 		{
 		var drawNewsIcon = (uiMode == null
-				&& !isForeign 
-				&& (maxRadius > 2 || hasWarning)
-				&& this.hasNewsTab());
+				&& newsIcon.style != "none"
+				&& (maxRadius > 2 || newsIcon.style == "highlight"));
 
 		ctx.font = fontText;
 		ctx.fillStyle = nameStyle;
@@ -1091,7 +1091,7 @@ WorldObject.prototype.drawGalacticMap = function (ctx, mapMetrics, x, y, pixelsP
 			ctx.arc(x, y, inner, end, start, false);
 			ctx.closePath();
 			
-			ctx.fillStyle = (hasWarning ? $Style.tileErrorBackground : "#404040");
+			ctx.fillStyle = newsIcon.iconBackColor;
 			ctx.fill();
 			
 			xText = x + (inner + (width / 2)) * Math.cos(arcStart + (arc / 2));
@@ -1283,6 +1283,7 @@ WorldObject.prototype.getInfoPanes = function (industryPane)
 	var paneList = [];
 	var isForeign = (this.sovereignID != $Anacreon.userInfo.sovereignID);
 	var sovereign = $Anacreon.sovereignList[this.sovereignID];
+	var showNews = this.getNewsStyle();
 	
 	//	We always have an overview:
 	
@@ -1688,7 +1689,7 @@ WorldObject.prototype.getInfoPanes = function (industryPane)
 
 	//	Add a tab for news, if we've got it.
 	
-	if (!isForeign && this.hasNewsTab())
+	if (showNews.style != "none")
 		{
 		paneList.push({
 			tabLabel: "News",
@@ -1791,6 +1792,61 @@ WorldObject.prototype.getMaxRadius = function (pixelsPerUnit)
 	if (maxRadius > 30) maxRadius = 30;
 	if (maxRadius < 1) maxRadius = 1;
 	return maxRadius;
+	}
+
+WorldObject.prototype.getNewsStyle = function ()
+
+//	If there is no news, we return style = "none". Otherwise, we return an Object with
+//	the following fields:
+//
+//	iconBackColor: The background color for the news icon
+//	style: Either "normal" or "highlight" or "none". Highlight means that we show 
+//		the news icon even when the map is zoomed out.
+
+	{
+	var isForeign = (this.sovereignID != $Anacreon.userInfo.sovereignID);
+
+	//	If we have a siege object, then we always show news, even if the world
+	//	does not belong to us.
+
+	var siege;
+	if (siege = this.getSiege())
+		{
+		//	If our world is being sieged, then this is a warning icon
+
+		if (!isForeign)
+			return { style:"highlight", iconBackColor:$Style.tileErrorBackground };
+
+		//	If we're the ones sieging, then we show a highlight
+
+		else if (siege.sovereignID == $Anacreon.userInfo.sovereignID)
+			return { style:"highlight", iconBackColor:$Style.tileHighlightBackground };
+
+		//	Otherwise, we pick a neutral icon
+
+		else
+			return { style:"normal", iconBackColor:$Style.tileHoverBackground };
+		}
+
+	//	If there's a rebellion, then we show a warning icon
+
+	else if (this.getRebellion())
+		{
+		if (!isForeign)
+			return { style:"highlight", iconBackColor:$Style.tileErrorBackground };
+		else
+			return { style:"normal", iconBackColor:$Style.tileHoverBackground };
+		}
+
+	//	Otherwise, if we have normal news
+
+	else if (this.news && !isForeign)
+		return { style:"normal", iconBackColor:$Style.tileNormalBackground };
+
+	//	Otherwise, no news
+
+	else
+		return { style:"none", };
 	}
 
 WorldObject.prototype.getPrimaryIndustry = function ()
@@ -2408,6 +2464,7 @@ WorldObject.prototype.getValidBattlePlans = function ()
 		{
 		var sovInfo = enemySovereigns[this.sovereignID];
 		var sovereign = $Anacreon.sovereignList[this.sovereignID];
+		var siege = this.getSiege();
 
 		//	Add warnings
 
@@ -2423,25 +2480,51 @@ WorldObject.prototype.getValidBattlePlans = function ()
 		else if (ourForces.spaceForces < sovInfo.forces.spaceForces)
 			warnings = "WARNING: We may not have enough space forces to defeat the world's defenses.";
 
-		//	Add the entry
+		//	If we have a siege in place, then we're reinforcing the siege
 
-		planList.push({
-			data: {
-				objective: "invasion",
-				sovereign: sovereign,
-				sovereignName: (sovereign.isIndependent ? this.name : sovereign.name),
-				enemySovereignIDs: [this.sovereignID],
-				description: "Destroy enemy space forces until it is safe to land ground forces, then take control of the world.",
-				groundForcesNeeded: true,
+		if (siege && siege.sovereignID == $Anacreon.userInfo.sovereignID)
+			{
+			planList.push({
+				data: {
+					objective: "invasion",
+					sovereign: sovereign,
+					sovereignName: (sovereign.isIndependent ? this.name : sovereign.name),
+					enemySovereignIDs: [this.sovereignID],
+					description: "Land troops to reinforce siege.",
+					groundForcesNeeded: true,
+	
+					friendlyForces: ourForces,
+					enemyForces: sovInfo.forces,
+	
+					warnings: warnings,
+					},
+				id: nextID++,
+				label: "Reinforce Siege",
+				});
+			}
 
-				friendlyForces: ourForces,
-				enemyForces: sovInfo.forces,
+		//	Otherwise, normal invasion
 
-				warnings: warnings,
-				},
-			id: nextID++,
-			label: "Invade " + this.name,
-			});
+		else
+			{
+			planList.push({
+				data: {
+					objective: "invasion",
+					sovereign: sovereign,
+					sovereignName: (sovereign.isIndependent ? this.name : sovereign.name),
+					enemySovereignIDs: [this.sovereignID],
+					description: "Destroy enemy space forces until it is safe to land ground forces, then take control of the world.",
+					groundForcesNeeded: true,
+	
+					friendlyForces: ourForces,
+					enemyForces: sovInfo.forces,
+	
+					warnings: warnings,
+					},
+				id: nextID++,
+				label: "Invade " + this.name,
+				});
+			}
 		}
 
 	//	Add a tile for each enemy sovereign
@@ -2676,12 +2759,6 @@ WorldObject.prototype.hasLAMs = function ()
 		}
 
 	return false;
-	}
-
-WorldObject.prototype.hasNewsTab = function ()
-	{
-	return (this.news != null
-		|| this.getRebellion() != null);
 	}
 
 WorldObject.prototype.hitTestBattlePane = function (x, y)

@@ -16,26 +16,69 @@ function SiegeObject (serverObj)
 	this.kind = "spaceObject";
 	}
 
+SiegeObject.prototype.getSpaceObject = function ()
+	{
+	//	We return the anchor object (the world we're sieging) so that the
+	//	info pane can be correct.
+	
+	return $Anacreon.objList[this.anchorObjID];
+	}
+
+SiegeObject.prototype.getSpaceObjectID = function ()
+	{
+	return this.anchorObjID;
+	}
+
 SiegeObject.prototype.getStatusText = function ()
 	{
-	if (this.status == "attackFailing")
+	var locationObj = $Anacreon.objList[this.anchorObjID];
+	var isDefender = (locationObj && locationObj.sovereignID == $Anacreon.userInfo.sovereignID);
+	var isAttacker = this.sovereignID == $Anacreon.userInfo.sovereignID;
+
+	if (this.status == null)
 		{
-		return "Attackers unable to break through our defenses.";
+		return "No information available on siege status.";
+		}
+	else if (this.status == "attackFailing")
+		{
+		if (isDefender)
+			return "Attackers unable to break through our defenses.";
+		else
+			{
+			var minForces = $Anacreon.formatNumberAsFloat(this.minAttackForces / 100.0, 1);
+			return "Siege forces unable to break through defenses (at least " + minForces + " needed).";
+			}
 		}
 	else if (this.status == "attackWinning")
 		{
-		return "Attackers overpowering defenses.";
+		if (isDefender)
+			return "Attackers overpowering defenses.";
+		else
+			return "Siege forces overpowering defenses.";
 		}
 	else if (this.status == "defenseFailing")
 		{
 		if (this.timeLeft > 1)
-			return "Defenses will fail in " + $Anacreon.formatDuration(siege.timeLeft);
+			{
+			if (isDefender)
+				return "Defenses will fail in " + $Anacreon.formatDuration(this.timeLeft);
+			else
+				return "Siege forces will break through defenses in " + $Anacreon.formatDuration(this.timeLeft);
+			}
 		else
-			return "Defenses will fail imminently.";
+			{
+			if (isDefender)
+				return "Defenses will fail imminently.";
+			else
+				return "Siege success imminent.";
+			}
 		}
 	else if (this.status == "defenseWinning")
 		{
-		return "Defenders degrading siege forces.";
+		if (isDefender)
+			return "Defenders degrading siege forces.";
+		else
+			return "Siege forces being overpowered by defenders.";
 		}
 	else
 		return "Attackers establishing siege.";

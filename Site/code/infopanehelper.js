@@ -923,6 +923,7 @@ var InfoPaneHelper =
 			var i;
 			var obj = data.obj;
 			var siege = data.siege;
+			var sovereign = $Anacreon.sovereignList[siege.sovereignID];
 			
 			ctx.textBaseline = "top";
 			
@@ -948,26 +949,32 @@ var InfoPaneHelper =
 			var cxText = cxInner - (imageWidth + $Style.cxTilePadding);
 			ctx.font = $Style.tileFontLarge;
 			ctx.fillStyle = $Style.tileTextHighlight;
-			ctx.fillText("Siege", xText, yText);
+			ctx.fillText("Under Siege by " + sovereign.name, xText, yText);
 	
 			yText += $Style.tileFontLargeHeight;
 
 			//	Status
 
-			var statusText = siege.getStatusText();
-
 			ctx.font = $Style.tileFontMedium;
 			ctx.fillStyle = $Style.tileTextNormal;
-			ctx.fillText(statusText, xText, yText);
-			yText += $Style.tileFontMediumHeight;
 
-			//	Paint stats
-			
-			paintLine(xText, yText, cxText, "siege forces", $Anacreon.formatNumberAsFloat(siege.attackForces / 100.0, 1));
-			yText += $Style.tileFontMediumHeight;
+			yText += $UI.drawText(ctx, 
+				xText, 
+				yText, 
+				cxText, 
+				$Style.tileFontSmallHeight, 
+				siege.getStatusText());
+	
+			//	Paint stats (but only if we have the data)
 
-			paintLine(xText, yText, cxText, "defense forces", $Anacreon.formatNumberAsFloat(siege.defenseForces / 100.0, 1));
-			yText += $Style.tileFontMediumHeight;
+			if (siege.status)
+				{
+				paintLine(xText, yText, cxText, "siege forces", $Anacreon.formatNumberAsFloat(siege.attackForces / 100.0, 1));
+				yText += $Style.tileFontMediumHeight;
+
+				paintLine(xText, yText, cxText, "defense forces", $Anacreon.formatNumberAsFloat(siege.defenseForces / 100.0, 1));
+				yText += $Style.tileFontMediumHeight;
+				}
 			}),
 			
 	paintSmallStat: (function (ctx, xPos, yPos, label, stat, statStyle)

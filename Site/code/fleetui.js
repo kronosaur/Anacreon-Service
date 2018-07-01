@@ -123,7 +123,7 @@ function fleetAttackDialog (sourceObj)
 
 		var xText = x + (cxWidth / 2);
 		var yText = y;
-		var cxText = 300;
+		var cxText = 400;
 
 		//	Draw the name first
 
