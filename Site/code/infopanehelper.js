@@ -2144,12 +2144,14 @@ var UnitRegionHelper = {
 	LARGE_CELL_WIDTH: 		210,
 	MEDIUM_CELL_WIDTH:		128,
 	SMALL_CELL_WIDTH:		100,
+	TINY_CELL_WIDTH:		68,
 
 	calcSize: (function (ctx, cxWidth, cyHeight, groundForces, spaceForces, cargo) 
 		{
 		var LARGE_CELLS_PER_ROW = Math.floor(cxWidth / this.LARGE_CELL_WIDTH);
 		var MEDIUM_CELLS_PER_ROW = Math.floor(cxWidth / this.MEDIUM_CELL_WIDTH);
 		var SMALL_CELLS_PER_ROW = Math.floor(cxWidth / this.SMALL_CELL_WIDTH);
+		var TINY_CELLS_PER_ROW = Math.floor(cxWidth / this.TINY_CELL_WIDTH);
 
 		//	For medium and small cells, we grow to fit. [But for large cells,
 		//	we keep the desired size because otherwise the cells are too 
@@ -2157,6 +2159,7 @@ var UnitRegionHelper = {
 
 		var MEDIUM_CELL_WIDTH = Math.floor(cxWidth / MEDIUM_CELLS_PER_ROW);
 		var SMALL_CELL_WIDTH = Math.floor(cxWidth / SMALL_CELLS_PER_ROW);
+		var TINY_CELL_WIDTH = Math.floor(cxWidth / TINY_CELLS_PER_ROW);
 
 		//	Figure out how many rows we have to work with.
 
@@ -2183,12 +2186,19 @@ var UnitRegionHelper = {
 					cols: MEDIUM_CELLS_PER_ROW,
 					painter: this.paintUnitTileMedium,
 					};
-			else
+			else if (cargo.length <= SMALL_CELLS_PER_ROW)
 				cargoPaint = {
 					cellWidth: SMALL_CELL_WIDTH,
 					rows: 1,
 					cols: SMALL_CELLS_PER_ROW,
 					painter: this.paintUnitTileSmall,
+					};
+			else
+				cargoPaint = {
+					cellWidth: TINY_CELL_WIDTH,
+					rows: 1,
+					cols: TINY_CELLS_PER_ROW,
+					painter: this.paintUnitTileTiny,
 					};
 			}
 
@@ -2227,6 +2237,9 @@ var UnitRegionHelper = {
 		var spaceForcesRowsSmall = Math.max(1, Math.ceil(spaceForces.length / SMALL_CELLS_PER_ROW));
 		var groundForcesRowsSmall = Math.max(1, Math.ceil(groundForces.length / SMALL_CELLS_PER_ROW));
 
+		var spaceForcesRowsTiny = Math.max(1, Math.ceil(spaceForces.length / TINY_CELLS_PER_ROW));
+		var groundForcesRowsTiny = Math.max(1, Math.ceil(groundForces.length / TINY_CELLS_PER_ROW));
+
 		//	Reduce ground forces section to a single row, if possible.
 
 		var groundForcesPaint;
@@ -2244,12 +2257,19 @@ var UnitRegionHelper = {
 				cols: MEDIUM_CELLS_PER_ROW,
 				painter: this.paintUnitTileMedium,
 				};
-		else
+		else if (groundForcesRowsSmall == 1)
 			groundForcesPaint = {
 				cellWidth: SMALL_CELL_WIDTH,
 				rows: groundForcesRowsSmall,
 				cols: SMALL_CELLS_PER_ROW,
 				painter: this.paintUnitTileSmall,
+				};
+		else
+			groundForcesPaint = {
+				cellWidth: TINY_CELL_WIDTH,
+				rows: groundForcesRowsTiny,
+				cols: TINY_CELLS_PER_ROW,
+				painter: this.paintUnitTileTiny,
 				};
 
 		//	Now shrink space forces until we fit
@@ -2278,13 +2298,25 @@ var UnitRegionHelper = {
 				groundForcesPaint: groundForcesPaint,
 				cargoPaint: cargoPaint,
 				};
-		else
+		else if (spaceForcesRowsSmall + groundForcesPaint.rows <= rowCount)
 			return { 
 				spaceForcesPaint: {
 					cellWidth: SMALL_CELL_WIDTH,
 					rows: spaceForcesRowsSmall,
 					cols: SMALL_CELLS_PER_ROW,
 					painter: this.paintUnitTileSmall,
+					},
+
+				groundForcesPaint: groundForcesPaint,
+				cargoPaint: cargoPaint,
+				};
+		else
+			return { 
+				spaceForcesPaint: {
+					cellWidth: TINY_CELL_WIDTH,
+					rows: spaceForcesRowsTiny,
+					cols: TINY_CELLS_PER_ROW,
+					painter: this.paintUnitTileTiny,
 					},
 
 				groundForcesPaint: groundForcesPaint,
@@ -2402,6 +2434,26 @@ var UnitRegionHelper = {
 		ctx.fillStyle = $Style.tileTextHighlight;
 		ctx.textAlign = "left";
 		ctx.fillText($Anacreon.formatNumberAsInteger(unitData.unitCount), xPos, yPos + yOffset);
+		}),
+
+	paintUnitTileTiny: (function (ctx, xPos, yPos, unitData) 
+		{
+		var imageWidth = 32;
+		var imageHeight = 24;
+	
+		//	Paint icon
+
+		CanvasUtil.drawImage(ctx, xPos, yPos, imageWidth, imageHeight, unitData.unitType.imageSmall);
+		xPos += imageWidth + $Style.cxTilePadding;
+
+		//	Paint count
+
+		var yOffset = (UnitRegionHelper.ROW_HEIGHT - $Style.tileFontMediumHeight) / 2;
+
+		ctx.font = $Style.tileFontMedium;
+		ctx.fillStyle = $Style.tileTextHighlight;
+		ctx.textAlign = "left";
+		ctx.fillText($Anacreon.formatNumberAsResources(unitData.unitCount), xPos, yPos + yOffset);
 		}),
 
 	unitCompare: (function (a, b) 

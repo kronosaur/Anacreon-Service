@@ -236,6 +236,20 @@ $Anacreon.formatNumberAsInteger = function (value)
 	return digits.join("");
 	}
 
+$Anacreon.formatNumberAsResources = function (value)
+	{
+	if (value < 1000)
+		return value;
+	else if (value < 10000)
+		return (Math.round(value / 100) / 10) + "k";
+	else if (value < 500000)
+		return Math.round(value / 1000) + "k";
+	else if (value < 10000000)
+		return (Math.round(value / 100000) / 10) + "m";
+	else
+		return Math.round(value / 1000000) + "m";
+	}
+
 $Anacreon.formatPopulation = function (population)
 	{
 	if (population < 100)
