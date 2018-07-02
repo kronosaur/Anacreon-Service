@@ -23,6 +23,12 @@ function FleetObject (serverObj)
 	$.extend(this, serverObj);
 	
 	this.kind = "spaceObject";
+
+	var forces = this.getForceComposition();
+	if (forces.spaceForceType)
+		{
+		this.icon = forces.spaceForceType.imageSmall;
+		}
 	}
 
 FleetObject.prototype.calcDistanceTo = function (obj)
@@ -92,11 +98,26 @@ FleetObject.prototype.drawIcon = function (ctx, x, y, iconSize, isFriendly)
 	else
 		ctx.fillStyle = $Style.mapEnemyUnit;
 
+	//	If the size is big enough, then paint an image
+
+	if ($Map.showFleetIcons && isFriendly && $Map.maxWorldRadius >= 7 && this.icon)
+		{
+		var iconWidth = 4.5 * $Map.maxWorldRadius;
+		var iconHeight = 3 * $Map.maxWorldRadius;
+
+		ctx.shadowBlur = 15;
+		ctx.shadowColor = "#000000";
+
+		CanvasUtil.drawImage(ctx, x - (iconWidth / 2), y - (iconHeight / 2), iconWidth, iconHeight, this.icon);
+
+		ctx.shadowBlur = 0;
+		}
+
 	//	Different icons depending on slow vs. fast fleet
 	//	ftlSpeed can be null if we don't have full information on the fleet
 	//	(e.g., we don't know its composition.)
 
-	if (this.ftlType == "warp")
+	else if (this.ftlType == "warp")
 		{
 		var width = 3 * iconSize;
 		var height = 2 * iconSize;

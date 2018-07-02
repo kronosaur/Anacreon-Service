@@ -953,10 +953,15 @@ WorldObject.prototype.drawGalacticMap = function (ctx, mapMetrics, x, y, pixelsP
 			ctx.lineTo(xBoxLeft + cxCut, yBoxTop);
 			ctx.closePath();
 
+			ctx.shadowBlur = (isForeign ? 0 : 15);
+			ctx.shadowColor = "#000000";
 			ctx.globalAlpha = (isIndependent ? 0.5 : 0.75);
 			ctx.fillStyle = designationStyle;
+
 			ctx.fill();
+
 			ctx.globalAlpha = 1.0;
+			ctx.shadowBlur = 0;
 			}
 		}
 

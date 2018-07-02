@@ -103,6 +103,10 @@ var $Map = {
 	//	List of effects
 
 	effects: [],
+
+	//	Options
+
+	showFleetIcons: true,
 	};
 	
 var FRAMES_PER_SECOND =	30;
@@ -590,13 +594,16 @@ $Map.initMapView = function (mapMetrics)
 	var yMapCenter = $Map.viewportY;
 	var xViewCenter = $Map.canvasCenterX;
 	var yViewCenter = $Map.canvasCenterY;
-		
+
 	//	At stellar scale we show star systems
 		
 	if (ZOOM_LEVELS[$Map.zoomLevel][1] == "galactic")
 		{
 		$Map.maxWorldRadius = mapMetrics.adjWorldSize * WorldObject.prototype.getMaxRadius(pixelsPerUnit);
 		$Map.pathWidth = Math.max(1, Math.min(Math.round($Map.maxWorldRadius / 3), 10));
+			
+		var maxFleetSize = 4.5 * Math.max(3, $Map.maxWorldRadius);
+		var fleetRadiusOffset = (0.5 * $Map.maxWorldRadius) + (0.5 * maxFleetSize);
 			
 		//	Loop over all objects.
 			
@@ -643,10 +650,12 @@ $Map.initMapView = function (mapMetrics)
 					var fleetObj = objList[obj.nearObjIDs[j]];
 					if (fleetObj != null && ($Map.maxWorldRadius > 1 || $Map.objSelected == fleetObj))
 						{
+						var isFriendly = (fleetObj.sovereignID == $Anacreon.userInfo.sovereignID);
+
 						//	Generate a position around the world
 							
 						var fleetAngle;
-						if (fleetObj.sovereignID == $Anacreon.userInfo.sovereignID)
+						if (isFriendly)
 							{
 							if (friendlyIndex == 0)
 								fleetAngle = friendlyStart;
@@ -671,11 +680,12 @@ $Map.initMapView = function (mapMetrics)
 							
 						//	The radius at which we place the fleet depends on 
 						//	the size of the world.
-							
-						var fleetRadius = Math.max(8, (3 * $Map.maxWorldRadius + 6) * obj.getSizeAdj());
+
+						var fleetRadius = Math.max(8, ($Map.maxWorldRadius * obj.getSizeAdj()) + fleetRadiusOffset);
 							
 						//	Convert to Cartessian
 							
+						fleetObj.mapPosAngle = fleetAngle;
 						fleetObj.mapPosX = obj.mapPosX + fleetRadius * Math.cos(fleetAngle);
 						fleetObj.mapPosY = obj.mapPosY + fleetRadius * Math.sin(fleetAngle);
                         fleetObj.inMap = true;

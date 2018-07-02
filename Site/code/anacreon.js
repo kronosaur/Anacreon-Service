@@ -1287,6 +1287,11 @@ SpaceObject.calcForceComposition = function (resources)
 	var groundForces = 0;
 	var spaceForces = 0;
 
+	var bestGroundType = null;
+	var bestSpaceType = null;
+	var bestGroundCombat = null;
+	var bestSpaceCombat = null;
+
 	if (resources != null)
 		{
 		for (i = 0; i < resources.length; i += 2)
@@ -1295,15 +1300,36 @@ SpaceObject.calcForceComposition = function (resources)
 			var resCount = resources[i + 1];
 
 			if (resType.category == "groundUnit")
-				groundForces += resCount * resType.attackValue;
+				{
+				var combatValue = resCount * resType.attackValue;
+				groundForces += combatValue;
+
+				if (bestGroundType == null || combatValue > bestGroundCombat)
+					{
+					bestGroundType = resType;
+					bestGroundCombat = combatValue;
+					}
+				}
 			else if (resType.category == "fixedUnit" || resType.category == "maneuveringUnit" || resType.category == "orbitalUnit" || resType.category == "LAMUnit")
-				spaceForces += resCount * resType.attackValue;
+				{
+				var combatValue = resCount * resType.attackValue;
+				spaceForces += combatValue;
+
+				if (bestSpaceType == null || combatValue > bestSpaceCombat)
+					{
+					bestSpaceType = resType;
+					bestSpaceCombat = combatValue;
+					}
+				}
+
 			}
 		}
 
 	return {
 		groundForces: groundForces,
+		groundForceType: bestGroundType,
 		spaceForces: spaceForces,
+		spaceForceType: bestSpaceType,
 		};
 	}
 
