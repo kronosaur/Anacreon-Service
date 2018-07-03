@@ -323,6 +323,90 @@ $UI.enterDialog = function (dialogFrameSel)
 	$UI.hideDialogError();
 	}
 
+$UI.enterMenu = function (menuDesc)
+	{
+	function addMenuItems (menuFrame, menuDesc)
+		{
+		var i;
+
+		for (i = 0; i < menuDesc.content.length; i++)
+			{
+			var itemDesc = menuDesc.content[i];
+			var id = "dlgMenuItem" + i;
+
+			var itemElement = $("<div id='" + id + "' class='menuItem'>" + itemDesc.label + "</div>");
+			itemElement.appendTo(menuFrame);
+			itemElement.on("click", itemDesc, (function (e) {
+				var itemDesc = e.data;
+				itemDesc.onClick(itemDesc.data);
+				doCloseMenu();
+				}));
+			}
+		}
+
+	function doCloseMenu ()
+		{
+		var i;
+		var menuFrame = $("#dlgMenu");
+
+		$UI.exitModal();
+		menuFrame.hide();
+
+		for (i = 0; i < $UI.currentMenu.content.length; i++)
+			{
+			var id = "dlgMenuItem" + i;
+			$(id).off();
+			}
+
+		menuFrame.empty();
+		$UI.currentMenu = null;
+		}
+
+	function onKeydown (e)
+		{
+		//	Handle normal dialog keyboard codes
+		
+		switch (e.which)
+			{
+			case KEY_ESCAPE:
+				{
+				doCloseMenu();
+				break;
+				}
+			}
+		}
+
+	//	Main -------------------------------------------------------------------
+
+	if ($UI.currentMenu != null)
+		{
+		doCloseMenu();
+		return;
+		}
+
+	var menuFrameSel = "#dlgMenu";
+	var menuFrame = $(menuFrameSel);
+
+	//	Add menu items
+
+	menuFrame.empty();
+	addMenuItems(menuFrame, menuDesc);
+
+	//	Position and show
+
+	menuFrame.css({top:menuDesc.posY, left:menuDesc.posX});
+	menuFrame.show();
+
+	//	Remember that we have it up
+
+	$UI.currentMenu = menuDesc;
+
+	//	keyboard input
+
+	$UI.enterModal();
+	$UI.keydown(onKeydown);
+	}
+
 $UI.enterModal = function ()
 	{
 	//	Disable keyboard input

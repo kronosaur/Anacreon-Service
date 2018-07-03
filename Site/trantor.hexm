@@ -332,6 +332,9 @@
 		<div class="dlgErrorBar"></div>
 	</div>
 
+	<div id="dlgMenu" class="smallMenu" style="display:none">
+	</div>
+
 	<!-- Resources -->
 	<img id="idMapIcons" src="res/MapIcons.png" style="display:none"/>
 	<img id="idTechLevelIcons" src="res/TechLevelIconsSmall.png" style="display:none"/>

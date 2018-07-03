@@ -406,6 +406,254 @@ WorldObject.prototype.calcDistanceTo = function (obj)
 	return Math.sqrt(xDist * xDist + yDist * yDist);
 	}
 
+WorldObject.prototype.calcDrawMetrics = function (ctx, mapMetrics, x, y, pixelsPerUnit, isSelected, uiMode)
+	{
+	var metrics = { };
+	var isForeign = (this.sovereignID != $Anacreon.userInfo.sovereignID);
+	var isIndependent = (this.sovereignID == $Anacreon.independentID);
+
+	//	Settings based on UI mode
+	
+	switch (uiMode)
+		{
+		case UI_MODE_EXPORT_TARGET:
+			{
+			var result = $Map.objSelected.calcExportStatus(this);
+
+			metrics.isDisabled = (!result.result && !isSelected);
+			metrics.statusMessage = result.reason;
+			break;
+			}
+
+		case UI_MODE_FLEET_DESTINATION:
+			metrics.isDisabled = !$Map.objSelected.canTravelTo(this);
+			break;
+
+		case UI_MODE_LAM_TARGET:
+			metrics.isDisabled = true;
+			break;
+
+		case UI_MODE_TRADE_TARGET:
+			{
+			var result = $Map.objSelected.calcImportStatus(this);
+
+			metrics.isDisabled = (!result.result && !isSelected);
+			metrics.statusMessage = result.reason;
+			break;
+			}
+
+		case UI_MODE_LAM_TARGET_OUT_OF_RANGE:
+		case UI_MODE_TRADE_TARGET_OUT_OF_RANGE:
+			if ($Map.objSelected.id == this.id)
+				{
+				metrics.isDisabled = false;
+				metrics.statusMessage = "Must be within 250 light-years of capital or sector capital";
+				}
+			else
+				metrics.isDisabled = true;
+			break;
+
+		default:
+			metrics.isDisabled = false;
+		}
+
+	//	Compute how big we want to show the world.
+	
+	var maxRadius = $Map.maxWorldRadius;
+	metrics.worldRadius = 1.5 * maxRadius * this.getSizeAdj();
+	metrics.outerRadius = metrics.worldRadius * 1.2;
+
+	//	Compute the importance of the world (based on population, etc.)
+	//
+	//	There are 4 values:
+	//
+	//	0	Unimportant world
+	//	1	Minor world
+	//	2	Major world
+	//	3	Key world (e.g., capital)
+	
+	var importance = this.getImportance();
+
+	//	Figure out what to draw
+
+	var newsIcon = this.getNewsStyle();
+	var drawName = ((!metrics.isDisabled || !isForeign)
+			&& (maxRadius > 6
+				|| (maxRadius > 5 && (importance > 1 || !isForeign))
+				|| (maxRadius > 2 && (importance > 1 || newsIcon.style == "highlight"))
+				|| isSelected
+				|| this.isCapital));
+	var drawNameFaded = drawName && (maxRadius <= 6 && !isSelected && !isForeign && importance < 2);
+	var drawDesignationIcons = (drawName
+			&& ($Map.displayMode != "military")
+			&& (maxRadius > 5)
+			&& (uiMode == null || !metrics.isDisabled));
+
+	//	Compute some colors
+
+	if (isIndependent)
+		{
+		if (metrics.isDisabled)
+			{
+			metrics.worldStyle = $Style.mapDisabledWorldText;
+			metrics.nameStyle = $Style.mapDisabledWorldText;
+			}
+		else
+			{
+			metrics.worldStyle = $Style.mapIndependentWorldText;
+			metrics.nameStyle = $Style.mapIndependentWorldText;
+			}
+
+		metrics.designationStyle = $Style.mapIndependentWorldBox;
+		}
+	else if (isForeign)
+		{
+		if (metrics.isDisabled)
+			{
+			metrics.worldStyle = $Style.mapDisabledWorldText;
+			metrics.nameStyle = $Style.mapDisabledWorldText;
+			}
+		else if (importance >= 2)
+			{
+			metrics.worldStyle = $Style.mapEnemyHighlight;
+			metrics.nameStyle = $Style.mapEnemyHighlight;
+			}
+		else
+			{
+			metrics.worldStyle = $Style.mapEnemyWorld;
+			metrics.nameStyle = $Style.mapEnemyWorld;
+			}
+
+		metrics.designationStyle = $Style.mapEnemyTerritory;
+		}
+	else if (importance >= 2)
+		{
+		if (metrics.isDisabled)
+			{
+			metrics.worldStyle = $Style.mapDisabledWorldText;
+			metrics.nameStyle = $Style.mapDisabledWorldText;
+			}
+		else
+			{
+			metrics.worldStyle = $Style.mapFriendlyHighlight;
+			metrics.nameStyle = (drawDesignationIcons ? $Style.mapFriendlyWorld : $Style.mapFriendlyHighlight);
+			}
+
+		metrics.designationStyle = $Style.mapFriendlyWorldBoxHighlight;
+		}
+	else if (drawNameFaded)
+		{
+		if (metrics.isDisabled)
+			{
+			metrics.worldStyle = $Style.mapDisabledWorldText;
+			metrics.nameStyle = $Style.mapDisabledWorldText;
+			}
+		else
+			{
+			metrics.worldStyle = $Style.mapFriendlyWorld;
+			metrics.nameStyle = $Style.mapFriendlyWorldFaded;
+			}
+
+		metrics.designationStyle = $Style.mapFriendlyWorldBoxFaded;
+		}
+	else
+		{
+		if (metrics.isDisabled)
+			{
+			metrics.worldStyle = $Style.mapDisabledWorldText;
+			metrics.nameStyle = $Style.mapDisabledWorldText;
+			}
+		else
+			{
+			metrics.worldStyle = $Style.mapFriendlyWorld;
+			metrics.nameStyle = $Style.mapFriendlyWorld;
+			}
+
+		metrics.designationStyle = $Style.mapFriendlyWorldBoxNormal;
+		}
+
+	//	Compute text size
+
+	if (drawName)
+		{
+		metrics.drawName = true;
+		metrics.xText = x;
+		metrics.yText = y + metrics.outerRadius;
+
+		if (maxRadius > 18
+				|| (maxRadius > 12 && importance >= 1)
+				|| (maxRadius > 6 && importance >= 2))
+			{
+			metrics.cyText = $Style.tileFontLargeHeight;
+			metrics.fontText = $Style.tileFontLarge;
+			metrics.fontBoldText = $Style.tileFontExtraLargeBold;
+			}
+		else if (maxRadius > 12
+				|| (maxRadius > 6 && importance >= 1)
+				|| (importance >= 3))
+			{
+			metrics.cyText = $Style.tileFontMediumHeight;
+			metrics.fontText = $Style.tileFontMedium;
+			metrics.fontBoldText = $Style.tileFontLargeBold;
+			}
+		else
+			{
+			metrics.cyText = $Style.tileFontSmallHeight;
+			metrics.fontText = $Style.tileFontSmall;
+			metrics.fontBoldText = $Style.tileFontMediumBold;
+			}
+
+		metrics.upperCaseText = (importance >= 3);
+
+		//	Designation icons
+
+		if (drawDesignationIcons)
+			{
+			metrics.drawDesignationIcons = true;
+
+			//	Icon size
+
+			metrics.iconSize = Math.min(Math.max(8, maxRadius * 3), 48);
+			if (metrics.cyText < $Style.tileFontLargeHeight)
+				metrics.iconSize = Math.min(metrics.cyText, metrics.iconSize);
+			
+			metrics.iconSpacing = metrics.iconSize / 12;
+
+			//	Icon position
+
+			metrics.yIcons = metrics.yText + metrics.cyText + metrics.iconSpacing;
+
+			//	Show the world class (instead of just a circle)
+
+			metrics.drawWorldClass = drawDesignationIcons;
+			}
+		}
+
+	//	Status message
+
+	if (metrics.statusMessage)
+		{
+		if (!drawName)
+			metrics.yStatusMessage = y + metrics.outerRadius;
+		else if (!drawDesignationIcons)
+			metrics.yStatusMessage = metrics.yText + metrics.cyText;
+		else
+			metrics.yStatusMessage = metrics.yIcons + metrics.iconSize + metrics.iconSpacing;
+		}
+
+	//	News icon
+
+	metrics.drawNewsIcon = (uiMode == null
+			&& newsIcon.style != "none"
+			&& (maxRadius > 2 || newsIcon.style == "highlight"));
+	metrics.newsIconBack = newsIcon.iconBackColor;
+
+	//	Done
+
+
+	return metrics;
+	}
+	
 WorldObject.prototype.calcExportSet = function (theResult)
 	{
 	var i;
@@ -712,269 +960,62 @@ WorldObject.prototype.drawBattlePane = function (ctx, mapMetrics, x, y, pixelsPe
 			"Zoom In",
 			isHovering);
 	}
-	
+
 WorldObject.prototype.drawGalacticMap = function (ctx, mapMetrics, x, y, pixelsPerUnit, isSelected, uiMode)
 	{
 	var isForeign = (this.sovereignID != $Anacreon.userInfo.sovereignID);
 	var isIndependent = (this.sovereignID == $Anacreon.independentID);
-
-	//	Figure out some settings based on the uiMode.
-
-	var isDisabled;
-	var statusMessage;
-
-	switch (uiMode)
-		{
-		case UI_MODE_EXPORT_TARGET:
-			{
-			var result = $Map.objSelected.calcExportStatus(this);
-
-			isDisabled = (!result.result && !isSelected);
-			statusMessage = result.reason;
-			break;
-			}
-
-		case UI_MODE_FLEET_DESTINATION:
-			isDisabled = !$Map.objSelected.canTravelTo(this);
-			break;
-
-		case UI_MODE_LAM_TARGET:
-			isDisabled = true;
-			break;
-
-		case UI_MODE_TRADE_TARGET:
-			{
-			var result = $Map.objSelected.calcImportStatus(this);
-
-			isDisabled = (!result.result && !isSelected);
-			statusMessage = result.reason;
-			break;
-			}
-
-		case UI_MODE_LAM_TARGET_OUT_OF_RANGE:
-		case UI_MODE_TRADE_TARGET_OUT_OF_RANGE:
-			if ($Map.objSelected.id == this.id)
-				{
-				isDisabled = false;
-				statusMessage = "Must be within 250 light-years of capital or sector capital";
-				}
-			else
-				isDisabled = true;
-			break;
-
-		default:
-			isDisabled = false;
-		}
+	
+	var metrics = this.calcDrawMetrics(ctx, mapMetrics, x, y, pixelsPerUnit, isSelected, uiMode);
 
 	//	Compute how big we want to show the world.
 	
 	var maxRadius = $Map.maxWorldRadius;
 
-	//	The world itself has a certain size and everything else goes
-	//	outside the area where the fleets go.
-	
-	var worldRadius = 1.5 * maxRadius * this.getSizeAdj();
-	var outerRadius = worldRadius * 1.2;
-
-	//	Compute the importance of the world (based on population, etc.)
-	//
-	//	There are 4 values:
-	//
-	//	0	Unimportant world
-	//	1	Minor world
-	//	2	Major world
-	//	3	Key world (e.g., capital)
-	
-	var importance = this.getImportance();
-
-	//	Figure out what to draw
-
-	var newsIcon = this.getNewsStyle();
-	var drawName = (!isDisabled || !isForeign)
-			&& (maxRadius > 6
-				|| (maxRadius > 5 && (importance > 1 || !isForeign))
-				|| (maxRadius > 2 && (importance > 1 || newsIcon.style == "highlight"))
-				|| isSelected
-				|| this.isCapital);
-	var drawDesignationIcons = drawName
-			&& (maxRadius > 5)
-			&& (uiMode == null || !isDisabled);
-	var drawNameFaded = drawName && (maxRadius <= 6 && !isSelected && !isForeign && importance < 2);
-
-	//	Compute some colors
-
-	var worldStyle;
-	var nameStyle;
-	var designationStyle;
-
-	if (isIndependent)
-		{
-		if (isDisabled)
-			{
-			worldStyle = $Style.mapDisabledWorldText;
-			nameStyle = $Style.mapDisabledWorldText;
-			}
-		else
-			{
-			worldStyle = $Style.mapIndependentWorldText;
-			nameStyle = $Style.mapIndependentWorldText;
-			}
-
-		designationStyle = $Style.mapIndependentWorldBox;
-		}
-	else if (isForeign)
-		{
-		if (isDisabled)
-			{
-			worldStyle = $Style.mapDisabledWorldText;
-			nameStyle = $Style.mapDisabledWorldText;
-			}
-		else if (importance >= 2)
-			{
-			worldStyle = $Style.mapEnemyHighlight;
-			nameStyle = $Style.mapEnemyHighlight;
-			}
-		else
-			{
-			worldStyle = $Style.mapEnemyWorld;
-			nameStyle = $Style.mapEnemyWorld;
-			}
-
-		designationStyle = $Style.mapEnemyTerritory;
-		}
-	else if (importance >= 2)
-		{
-		if (isDisabled)
-			{
-			worldStyle = $Style.mapDisabledWorldText;
-			nameStyle = $Style.mapDisabledWorldText;
-			}
-		else
-			{
-			worldStyle = $Style.mapFriendlyHighlight;
-			nameStyle = (drawDesignationIcons ? $Style.mapFriendlyWorld : $Style.mapFriendlyHighlight);
-			}
-
-		designationStyle = $Style.mapFriendlyWorldBoxHighlight;
-		}
-	else if (drawNameFaded)
-		{
-		if (isDisabled)
-			{
-			worldStyle = $Style.mapDisabledWorldText;
-			nameStyle = $Style.mapDisabledWorldText;
-			}
-		else
-			{
-			worldStyle = $Style.mapFriendlyWorld;
-			nameStyle = $Style.mapFriendlyWorldFaded;
-			}
-
-		designationStyle = $Style.mapFriendlyWorldBoxFaded;
-		}
-	else
-		{
-		if (isDisabled)
-			{
-			worldStyle = $Style.mapDisabledWorldText;
-			nameStyle = $Style.mapDisabledWorldText;
-			}
-		else
-			{
-			worldStyle = $Style.mapFriendlyWorld;
-			nameStyle = $Style.mapFriendlyWorld;
-			}
-
-		designationStyle = $Style.mapFriendlyWorldBoxNormal;
-		}
-
 	//	If we're drawing the name, then compute some metrics
 
-	var xText;
 	var yText;
-	var cyText;
-	var fontText;
-	var fontBoldText;
-	var iconSize;
-	var iconSpacing;
 
-	if (drawName)
+	//	Draw the info box background
+
+	if (metrics.drawDesignationIcons)
 		{
-		xText = x;
-		yText = y + outerRadius;
-		
-		if (maxRadius > 18
-				|| (maxRadius > 12 && importance >= 1)
-				|| (maxRadius > 6 && importance >= 2))
-			{
-			cyText = $Style.tileFontLargeHeight;
-			fontText = $Style.tileFontLarge;
-			fontBoldText = $Style.tileFontExtraLargeBold;
-			}
-		else if (maxRadius > 12
-				|| (maxRadius > 6 && importance >= 1)
-				|| (importance >= 3))
-			{
-			cyText = $Style.tileFontMediumHeight;
-			fontText = $Style.tileFontMedium;
-			fontBoldText = $Style.tileFontLargeBold;
-			}
-		else
-			{
-			cyText = $Style.tileFontSmallHeight;
-			fontText = $Style.tileFontSmall;
-			fontBoldText = $Style.tileFontMediumBold;
-			}
+		//	Draw a background to keep everything together
 
-		//	Draw the info box background
+		var yBoxTop = metrics.yText;
+		var yBoxBottom = metrics.yText + metrics.cyText + (2 * metrics.iconSpacing) + metrics.iconSize;
+		var cyCut = (yBoxBottom - yBoxTop) / 2;
+		var cxCut = 0.577 * cyCut;	//	30 degrees
+		var xBoxLeft = x - (4 * metrics.iconSpacing) - metrics.iconSize;
+		var xBoxRight = x + (4 * metrics.iconSpacing) + metrics.iconSize;
+		ctx.beginPath();
+		ctx.moveTo(xBoxRight - cxCut, yBoxTop);
+		ctx.lineTo(xBoxRight, yBoxTop + cyCut);
+		ctx.lineTo(xBoxRight, yBoxBottom);
+		ctx.lineTo(xBoxLeft, yBoxBottom);
+		ctx.lineTo(xBoxLeft, yBoxTop + cyCut);
+		ctx.lineTo(xBoxLeft + cxCut, yBoxTop);
+		ctx.closePath();
 
-		if (drawDesignationIcons)
-			{
-			iconSize = Math.min(Math.max(8, maxRadius * 3), 48);
-			if (cyText < $Style.tileFontLargeHeight)
-				iconSize = Math.min(cyText, iconSize);
-			
-			iconSpacing = iconSize / 12;
+		ctx.shadowBlur = (isForeign ? 0 : 15);
+		ctx.shadowColor = "#000000";
+		ctx.globalAlpha = (isIndependent ? 0.5 : 0.75);
+		ctx.fillStyle = metrics.designationStyle;
 
-			//	Draw a background to keep everything together
+		ctx.fill();
 
-			var yBoxTop = yText;
-			var yBoxBottom = yText + cyText + (2 * iconSpacing) + iconSize;
-			var cyCut = (yBoxBottom - yBoxTop) / 2;
-			var cxCut = 0.577 * cyCut;	//	30 degrees
-			var xBoxLeft = x - (4 * iconSpacing) - iconSize;
-			var xBoxRight = x + (4 * iconSpacing) + iconSize;
-			ctx.beginPath();
-			ctx.moveTo(xBoxRight - cxCut, yBoxTop);
-			ctx.lineTo(xBoxRight, yBoxTop + cyCut);
-			ctx.lineTo(xBoxRight, yBoxBottom);
-			ctx.lineTo(xBoxLeft, yBoxBottom);
-			ctx.lineTo(xBoxLeft, yBoxTop + cyCut);
-			ctx.lineTo(xBoxLeft + cxCut, yBoxTop);
-			ctx.closePath();
-
-			ctx.shadowBlur = (isForeign ? 0 : 15);
-			ctx.shadowColor = "#000000";
-			ctx.globalAlpha = (isIndependent ? 0.5 : 0.75);
-			ctx.fillStyle = designationStyle;
-
-			ctx.fill();
-
-			ctx.globalAlpha = 1.0;
-			ctx.shadowBlur = 0;
-			}
+		ctx.globalAlpha = 1.0;
+		ctx.shadowBlur = 0;
 		}
 
 	//	Draw the world
-	
-	ctx.fillStyle = worldStyle;
 
-	if (drawDesignationIcons)
+	if (metrics.drawWorldClass)
 		{
 		var worldClass = $Anacreon.designTypes[this.worldClass];
 		if (worldClass && worldClass.imageSmall)
 			{
-			var imageRadius = worldRadius;
+			var imageRadius = metrics.worldRadius;
 
 			ctx.save();
 
@@ -982,7 +1023,7 @@ WorldObject.prototype.drawGalacticMap = function (ctx, mapMetrics, x, y, pixelsP
 			ctx.arc(x, y, imageRadius, 0, 2 * Math.PI, false);
 			ctx.clip();
 
-			if (isDisabled)
+			if (metrics.isDisabled)
 				ctx.globalAlpha = 0.25;
 			else if (!isForeign || isSelected)
 				ctx.globalAlpha = 1.0;
@@ -1002,34 +1043,30 @@ WorldObject.prototype.drawGalacticMap = function (ctx, mapMetrics, x, y, pixelsP
 		}
 	else
 		{
+		ctx.fillStyle = metrics.worldStyle;
+
 		ctx.beginPath();
-		ctx.arc(x, y, worldRadius, 0, 2 * Math.PI, false);
+		ctx.arc(x, y, metrics.worldRadius, 0, 2 * Math.PI, false);
 		ctx.fill();
 		}
 
 	//	Draw the name of the world below it.
 	
-	if (drawName)
+	if (metrics.drawName)
 		{
-		var drawNewsIcon = (uiMode == null
-				&& newsIcon.style != "none"
-				&& (maxRadius > 2 || newsIcon.style == "highlight"));
-
-		ctx.font = fontText;
-		ctx.fillStyle = nameStyle;
+		ctx.font = metrics.fontText;
+		ctx.fillStyle = metrics.nameStyle;
 			
 		//	Draw name
 			
 		ctx.textAlign = "center";
 		ctx.textBaseline = "top";
-		ctx.fillText((importance == 3 ? this.name.toUpperCase() : this.name), xText, yText);
+		ctx.fillText((metrics.upperCaseText ? this.name.toUpperCase() : this.name), metrics.xText, metrics.yText);
 		ctx.textAlign = "left";
-		
-		yText += cyText;
 		
 		//	Draw icons for designation and tech level below the name.
 		
-		if (drawDesignationIcons)
+		if (metrics.drawDesignationIcons)
 			{
 			//	For imperial worlds, show both designation and tech level
 
@@ -1037,17 +1074,17 @@ WorldObject.prototype.drawGalacticMap = function (ctx, mapMetrics, x, y, pixelsP
 				{
 				var worldDesignation = $Anacreon.designTypes[this.designation];
 				worldDesignation.paintIconSmall(ctx,
-						xText + (iconSpacing / 2),
-						yText + iconSpacing,
-						iconSize,
-						iconSize);
+						metrics.xText + (metrics.iconSpacing / 2),
+						metrics.yIcons,
+						metrics.iconSize,
+						metrics.iconSize);
 
 				InfoPaneHelper.paintTechLevelIcon(ctx,
 						this.techLevel,
-						xText - (iconSpacing / 2) - iconSize,
-						yText + iconSpacing,
-						iconSize,
-						iconSize);
+						metrics.xText - (metrics.iconSpacing / 2) - metrics.iconSize,
+						metrics.yIcons,
+						metrics.iconSize,
+						metrics.iconSize);
 				}
 				
 			//	Otherwise, only show tech level
@@ -1056,39 +1093,37 @@ WorldObject.prototype.drawGalacticMap = function (ctx, mapMetrics, x, y, pixelsP
 				{
 				InfoPaneHelper.paintTechLevelIcon(ctx,
 						this.techLevel,
-						xText - (iconSize / 2),
-						yText + iconSpacing,
-						iconSize,
-						iconSize);
+						metrics.xText - (metrics.iconSize / 2),
+						metrics.yIcons,
+						metrics.iconSize,
+						metrics.iconSize);
 				}
-
-			yText += iconSpacing + iconSize + iconSpacing;
 			}
 
 		//	Draw status message
 
-		if (statusMessage)
+		if (metrics.statusMessage)
 			{
 			ctx.textAlign = "center";
 			ctx.fillStyle = "#707070";
 			ctx.font = $Style.tileFontSmall;
 
 			var cxMessage = $Style.tileFontSmallHeight * 10;
-			yText += $UI.drawText(ctx, xText, yText, cxMessage, $Style.tileFontSmallHeight, statusMessage);
+			$UI.drawText(ctx, metrics.xText, metrics.yStatusMessage, cxMessage, $Style.tileFontSmallHeight, metrics.statusMessage);
 			}
 			
 		//	If this is one of our worlds, then show news
 		
-		if (drawNewsIcon)
+		if (metrics.drawNewsIcon)
 			{
-			var width = Math.max(cyText, 2 * maxRadius);
+			var width = Math.max(metrics.cyText, 2 * maxRadius);
 			var arc = 0.20 * Math.PI;
 			var arcStart = 0.25 * Math.PI;
 			
 			var start = 2 * Math.PI - arcStart;
 			var end = 2 * Math.PI - (arcStart + arc);
 			
-			var inner = outerRadius + 10;
+			var inner = metrics.outerRadius + 10;
 			var outer = inner + width;
 			
 			ctx.beginPath();
@@ -1096,17 +1131,17 @@ WorldObject.prototype.drawGalacticMap = function (ctx, mapMetrics, x, y, pixelsP
 			ctx.arc(x, y, inner, end, start, false);
 			ctx.closePath();
 			
-			ctx.fillStyle = newsIcon.iconBackColor;
+			ctx.fillStyle = metrics.newsIconBack;
 			ctx.fill();
 			
-			xText = x + (inner + (width / 2)) * Math.cos(arcStart + (arc / 2));
-			yText = y - (inner + (width / 2)) * Math.sin(arcStart + (arc / 2));
+			metrics.xText = x + (inner + (width / 2)) * Math.cos(arcStart + (arc / 2));
+			var yText = y - (inner + (width / 2)) * Math.sin(arcStart + (arc / 2));
 			
 			ctx.fillStyle = $Style.tileTextBright;
-			ctx.font = fontBoldText;
+			ctx.font = metrics.fontBoldText;
 			ctx.textAlign = "center";
 			ctx.textBaseline = "middle";
-			ctx.fillText("!", xText, yText);
+			ctx.fillText("!", metrics.xText, yText);
 			ctx.textAlign = "left";
 			}
 		}

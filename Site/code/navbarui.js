@@ -33,6 +33,7 @@ function NavBar (canvas)
 
 	this.activeRegions = [];
 	this.createZoomControls();
+	this.createConfigControls();
 	this.createHelpControls();
 
 	//	Animation
@@ -81,6 +82,42 @@ function NavBar (canvas)
 		);
 	}
 
+NavBar.prototype.createConfigControls = function ()
+	{
+	//	Snapshot
+
+	this.activeRegions.push(new NavBarIconButton({
+		xPos: 307,
+		yPos: 1,
+		cxWidth: 31,
+		cyHeight: 31,
+		label: "snapshotMap",
+
+		onDrawIcon: NavBarIconButton.prototype.onDrawIconMap,
+		onClick: (function ()
+			{
+			var img = $Map.snapshot();
+			window.open(img,"","width=700, height=700");
+			}),
+		}));
+
+	//	UI Settings
+
+	this.activeRegions.push(new NavBarIconButton({
+		xPos: 342,
+		yPos: 1,
+		cxWidth: 31,
+		cyHeight: 31,
+		label: "uiSettings",
+
+		onDrawIcon: NavBarIconButton.prototype.onDrawIconMap,
+		onClick: (function ()
+			{
+			uiSettingsDialog();
+			}),
+		}));
+	}
+
 NavBar.prototype.createHelpControls = function ()
 	{
 	}
@@ -119,22 +156,6 @@ NavBar.prototype.createZoomControls = function ()
 			}),
 		}));
 
-	//	UI Settings
-
-	this.activeRegions.push(new NavBarIconButton({
-		xPos: 894,
-		yPos: 1,
-		cxWidth: 31,
-		cyHeight: 31,
-		label: "uiSettings",
-
-		onDrawIcon: NavBarIconButton.prototype.onDrawIconMap,
-		onClick: (function ()
-			{
-			uiSettingsDialog();
-			}),
-		}));
-
 	//	Zoom in
 
 	this.activeRegions.push(new NavBarIconButton({
@@ -167,20 +188,25 @@ NavBar.prototype.createZoomControls = function ()
 			}),
 		}));
 
-	//	Snapshot
+	//	Map Style
 
 	this.activeRegions.push(new NavBarIconButton({
-		xPos: 342,
+		xPos: 804,
 		yPos: 1,
-		cxWidth: 31,
+		cxWidth: 86,
 		cyHeight: 31,
-		label: "snapshotMap",
+		label: DISPLAY_MODE[$Map.displayMode].label,
 
-		onDrawIcon: NavBarIconButton.prototype.onDrawIconMap,
-		onClick: (function ()
+		data: this,
+		onDrawIcon: NavBarIconButton.prototype.onDrawText,
+		onClick: (function (navBar)
 			{
-			var img = $Map.snapshot();
-			window.open(img,"","width=700, height=700");
+			var NavBarPos = navBar.canvas.offset();
+
+			$Map.cmdDisplayMenu(NavBarPos.left + 804, NavBarPos.top + 32);
+			}),
+		onRefresh: (function (desc) {
+			desc.label = DISPLAY_MODE[$Map.displayMode].label;
 			}),
 		}));
 	}
@@ -409,7 +435,7 @@ NavBar.prototype.onMouseDown = function (x, y)
 	{
 	var theTile = this.findTileAtPos(x, y);
 	if (theTile && theTile.onClick)
-		theTile.onClick();
+		theTile.onClick(theTile.data);
 	}
 
 NavBar.prototype.onMouseMove = function (x, y)
@@ -426,6 +452,18 @@ NavBar.prototype.onMouseMove = function (x, y)
 		{
 		this.hoverTile = newHoverTile;
 		this.isInvalid = true;
+		}
+	}
+
+NavBar.prototype.refresh = function ()
+	{
+	var i;
+
+	for (i = 0; i < this.activeRegions.length; i++)
+		{
+		var region = this.activeRegions[i];
+		if (region.onRefresh)
+			region.onRefresh(region);
 		}
 	}
 
@@ -448,6 +486,9 @@ function NavBarIconButton (desc)
 	//	Actions
 
 	this.onClick = desc.onClick;
+	this.data = desc.data;
+
+	this.onRefresh = desc.onRefresh;
 	}
 
 NavBarIconButton.prototype.onDraw = function (ctx, isHovering)
@@ -489,3 +530,17 @@ NavBarIconButton.prototype.onDrawIconText = function (ctx, isHovering)
 
 	ctx.fillText(this.label, xText, yText);
 	}
+
+NavBarIconButton.prototype.onDrawText = function (ctx, isHovering)
+	{
+	ctx.fillStyle = $Style.dlgHighlightText;
+	ctx.font = $Style.tileFontLargeBold;
+	ctx.textBaseline = "middle";
+	ctx.textAlign = "center";
+
+	var xText = this.xPos + (this.cxWidth / 2);
+	var yText = this.yPos + (this.cyHeight / 2);
+
+	ctx.fillText(this.label, xText, yText);
+	}
+

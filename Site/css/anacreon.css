@@ -393,6 +393,33 @@ input:focus {
 	width: 374px;
 }
 
+.smallMenu {
+	position: absolute;
+	padding: 1px 1px;
+	z-index: 60;
+
+	border-radius: 2px;
+	border-top: 1px solid rgba(255,255,255,0.9);
+	border-left: 1px solid rgba(255,255,255,0.9);
+	border-right: 1px solid rgba(0, 0, 0, 0.75);
+	border-bottom: 1px solid rgba(0, 0, 0, 0.75);
+	background-image: url("/res/MenuBackground.jpg");
+}
+
+.menuItem {
+	padding: 2px 20px;
+
+	font-weight: bold;
+	text-align: center;
+	text-shadow: black 0px 0px 10px;
+	
+	cursor: pointer;
+}
+
+.menuItem:hover {
+	background-color: #5f5f6e;
+}
+
 /* Page styles */
 
 #articleColumn {

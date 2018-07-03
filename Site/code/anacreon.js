@@ -241,13 +241,13 @@ $Anacreon.formatNumberAsResources = function (value)
 	if (value < 1000)
 		return value;
 	else if (value < 10000)
-		return (Math.round(value / 100) / 10) + "k";
+		return (Math.round(value / 100) / 10) + "K";
 	else if (value < 500000)
-		return Math.round(value / 1000) + "k";
+		return Math.round(value / 1000) + "K";
 	else if (value < 10000000)
-		return (Math.round(value / 100000) / 10) + "m";
+		return (Math.round(value / 100000) / 10) + "M";
 	else
-		return Math.round(value / 1000000) + "m";
+		return Math.round(value / 1000000) + "M";
 	}
 
 $Anacreon.formatPopulation = function (population)

@@ -17,6 +17,10 @@ var $Map = {
 	//		pixelsPerUnit: Pixels per unit (cached from ZOOM_LEVELS).
 	//	desiredPixelsPerUnit: Pixels per unit (set when zooming)
 	//	desiredZoomLevel: Index into ZOOM_LEVELS
+	//	displayMode: Type of information to display:
+	//		"normal": Standard display
+	//		"military": Show military display
+	//		"resources": Show resources
 	//	objPlanetaryCenter: If in planetary scale, this is the central object.
 	//	objPlanetaryCenterID: ID of planetary center.
 	//	objSelected: Selected object.
@@ -106,6 +110,7 @@ var $Map = {
 
 	//	Options
 
+	displayMode: "normal",
 	showFleetIcons: true,
 	};
 	
@@ -116,6 +121,20 @@ var SCALE_LEGEND_OFFSET_LEFT = 100;
 var SCALE_LEGEND_OFFSET_BOTTOM = 100;
 var SCALE_LEGEND_TICK_HEIGHT = 5;
 var SCALE_LEGEND_LINE_WIDTH = 2;
+
+var DISPLAY_MODE = {
+	military: {
+		label: "Military",
+		},
+
+	normal: {
+		label: "Standard",
+		},
+
+	resources: {
+		label: "Resources",
+		},
+	};
 
 var MAP_ICONS = {
 						//	0. xSrc		1. ySrc		2. cxWidth	3. cyHeight
@@ -307,6 +326,44 @@ $Map.animateLoading = function ()
 
 	$Map.tick++;
 	}
+
+$Map.cmdDisplayMenu = function (menuPosX, menuPosY)
+	{
+	var content = [];
+
+	content.push({
+		label: DISPLAY_MODE.normal.label,
+		data: "normal",
+		onClick: $Map.cmdSetDisplayMode,
+		});
+
+	content.push({
+		label: DISPLAY_MODE.military.label,
+		data: "military",
+		onClick: $Map.cmdSetDisplayMode,
+		});
+
+	content.push({
+		label: DISPLAY_MODE.resources.label,
+		data: "resources",
+		onClick: $Map.cmdSetDisplayMode,
+		});
+
+	$UI.enterMenu({
+		posX: menuPosX,
+		posY: menuPosY,
+		content: content,
+		});
+	}
+
+$Map.cmdSetDisplayMode = function (newMode)
+	{
+	$Map.displayMode = newMode;
+
+	$Map.navBar.refresh();
+	$Map.initMapView($Map.curMetrics);
+	$Map.refreshSelectionView();
+	};
 
 $Map.cmdZoomIn = function ()
 	{
