@@ -613,7 +613,7 @@ $GalacticMap.onDraw = function (mapMetrics)
 
 	//	Paint sovereign names
 
-	if (snapshot)
+	if (snapshot || mapMetrics.pixelsPerUnit <= 1.0)
 		{
 		for (i = 0; i < $Anacreon.sovereignList.length; i++)
 			{
