@@ -196,6 +196,48 @@ $Anacreon.formatDurationDigits = function (durationInWatches)
 		}
 	}
 
+$Anacreon.formatForce = function (value)
+	{
+	//	Force values are shown always scaled.
+
+	value = value / 100.0;
+
+	//	12.3
+
+	if (value < 100)
+		return $Anacreon.formatNumberAsFloat(value, 1);
+
+	//	123
+
+	else if (value < 1000)
+		return Math.round(value).toString();
+
+	//	1.2K
+
+	else if (value < 10000)
+		return (Math.round(value / 100) / 10) + "K";
+
+	//	123K
+
+	else if (value < 1000000)
+		return Math.round(value / 1000) + "K";
+
+	//	1.2M
+
+	else if (value < 10000000)
+		return (Math.round(value / 100000) / 10) + "M";
+
+	//	12M
+
+	else if (value < 1000000000.0)
+		return Math.round(value / 1000000) + "M";
+
+	//	1.2B
+
+	else
+		return $Anacreon.formatNumberAsFloat(value / 1000000000.0, 1) + "B";
+	}
+
 $Anacreon.formatNumberAsFloat = function (value, decimals)
 	{
 	if (decimals <= 0)

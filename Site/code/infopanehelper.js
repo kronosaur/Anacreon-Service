@@ -2111,7 +2111,7 @@ var UnitRegionHelper = {
 		var yUnits = yPos;
 
 		this.paintUnitGroup(ctx, xUnits, yUnits, cxWidth, paintDesc.spaceForcesPaint, spaceForces);
-		InfoPaneHelper.paintIconAndText(ctx, xUnits + $Style.cxTilePadding, yUnits, this.TITLE_WIDTH, null, "space forces", $Anacreon.formatNumberAsFloat(forces.spaceForces / 100.0, 1));
+		InfoPaneHelper.paintIconAndText(ctx, xUnits + $Style.cxTilePadding, yUnits, this.TITLE_WIDTH, null, "space forces", $Anacreon.formatForce(forces.spaceForces));
 			
 		//	Paint ground forces
 
@@ -2120,7 +2120,7 @@ var UnitRegionHelper = {
 			yUnits += (paintDesc.spaceForcesPaint.rows * this.ROW_HEIGHT) + $Style.cyTilePadding;
 
 			this.paintUnitGroup(ctx, xUnits, yUnits, cxWidth, paintDesc.groundForcesPaint, groundForces);
-			InfoPaneHelper.paintIconAndText(ctx, xUnits + $Style.cxTilePadding, yUnits, this.TITLE_WIDTH, null, "ground forces", $Anacreon.formatNumberAsFloat(forces.groundForces / 100.0, 1));
+			InfoPaneHelper.paintIconAndText(ctx, xUnits + $Style.cxTilePadding, yUnits, this.TITLE_WIDTH, null, "ground forces", $Anacreon.formatForce(forces.groundForces));
 			}
 
 		//	Paint cargo, if necessary

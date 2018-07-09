@@ -484,8 +484,10 @@ WorldObject.prototype.calcDrawMetrics = function (ctx, mapMetrics, x, y, pixelsP
 				|| isSelected
 				|| this.isCapital));
 	var drawNameFaded = drawName && (maxRadius <= 6 && !isSelected && !isForeign && importance < 2);
-	var drawDesignationIcons = (drawName
-			&& ($Map.displayMode != "military")
+
+	//	Draw an info box
+
+	metrics.drawInfoBox = (drawName
 			&& (maxRadius > 5)
 			&& (uiMode == null || !metrics.isDisabled));
 
@@ -536,7 +538,7 @@ WorldObject.prototype.calcDrawMetrics = function (ctx, mapMetrics, x, y, pixelsP
 		else
 			{
 			metrics.worldStyle = $Style.mapFriendlyHighlight;
-			metrics.nameStyle = (drawDesignationIcons ? $Style.mapFriendlyWorld : $Style.mapFriendlyHighlight);
+			metrics.nameStyle = (metrics.drawInfoBox ? $Style.mapFriendlyWorld : $Style.mapFriendlyHighlight);
 			}
 
 		metrics.designationStyle = $Style.mapFriendlyWorldBoxHighlight;
@@ -604,29 +606,62 @@ WorldObject.prototype.calcDrawMetrics = function (ctx, mapMetrics, x, y, pixelsP
 			}
 
 		metrics.upperCaseText = (importance >= 3);
+		}
 
-		//	Designation icons
+	//	Info box
 
-		if (drawDesignationIcons)
+	if (metrics.drawInfoBox)
+		{
+		//	Icon size
+
+		var iconSizeAdj = (importance >= 2 ? 3.0 : 2.0);
+		var iconSize = Math.min(Math.max(16, maxRadius * iconSizeAdj), 48);
+		
+		metrics.iconSpacing = iconSize / 12;
+
+		//	Icon position
+
+		metrics.yIcons = metrics.yText + metrics.cyText + metrics.iconSpacing;
+
+		//	Figure out what to show in info box
+
+		if ($Map.displayMode == "military")
 			{
+			metrics.cxIcon = 1.5 * iconSize;
+			metrics.cyIcon = iconSize;
+
+			//	Show military icons
+
+			metrics.drawMilitaryIcons = true;
+
+			//	Show the designation
+
+			metrics.showAsDesignation = true;
+			}
+		else
+			{
+			metrics.cxIcon = iconSize;
+			metrics.cyIcon = iconSize;
+
+			//	Show designation icons
+	
 			metrics.drawDesignationIcons = true;
-
-			//	Icon size
-
-			metrics.iconSize = Math.min(Math.max(8, maxRadius * 3), 48);
-			if (metrics.cyText < $Style.tileFontLargeHeight)
-				metrics.iconSize = Math.min(metrics.cyText, metrics.iconSize);
-			
-			metrics.iconSpacing = metrics.iconSize / 12;
-
-			//	Icon position
-
-			metrics.yIcons = metrics.yText + metrics.cyText + metrics.iconSpacing;
 
 			//	Show the world class (instead of just a circle)
 
-			metrics.drawWorldClass = drawDesignationIcons;
+			metrics.showAsWorldClass = true;
 			}
+
+		//	Now that we have actual icon sizes, we compute info box metrics
+
+		metrics.cxHalfInfoBox = (4 * metrics.iconSpacing) + metrics.cxIcon;
+		metrics.cyInfoBox = metrics.cyText + (2 * metrics.iconSpacing) + metrics.cyIcon;
+
+		//	Icon positions
+
+		metrics.xCenterIcon = metrics.xText - (metrics.cxIcon / 2);
+		metrics.xLeftIcon = metrics.xText - (metrics.iconSpacing / 2) - metrics.cxIcon;
+		metrics.xRightIcon = metrics.xText + (metrics.iconSpacing / 2);
 		}
 
 	//	Status message
@@ -635,10 +670,10 @@ WorldObject.prototype.calcDrawMetrics = function (ctx, mapMetrics, x, y, pixelsP
 		{
 		if (!drawName)
 			metrics.yStatusMessage = y + metrics.outerRadius;
-		else if (!drawDesignationIcons)
+		else if (!metrics.drawInfoBox)
 			metrics.yStatusMessage = metrics.yText + metrics.cyText;
 		else
-			metrics.yStatusMessage = metrics.yIcons + metrics.iconSize + metrics.iconSpacing;
+			metrics.yStatusMessage = metrics.yIcons + iconSize + metrics.iconSpacing;
 		}
 
 	//	News icon
@@ -649,7 +684,6 @@ WorldObject.prototype.calcDrawMetrics = function (ctx, mapMetrics, x, y, pixelsP
 	metrics.newsIconBack = newsIcon.iconBackColor;
 
 	//	Done
-
 
 	return metrics;
 	}
@@ -978,39 +1012,122 @@ WorldObject.prototype.drawGalacticMap = function (ctx, mapMetrics, x, y, pixelsP
 
 	//	Draw the info box background
 
-	if (metrics.drawDesignationIcons)
+	if (metrics.drawInfoBox)
 		{
-		//	Draw a background to keep everything together
+		//	Draw icons for designation and tech level below the name.
+		
+		if (metrics.drawDesignationIcons)
+			{
+			this.drawInfoBox(ctx, x, y, metrics);
 
-		var yBoxTop = metrics.yText;
-		var yBoxBottom = metrics.yText + metrics.cyText + (2 * metrics.iconSpacing) + metrics.iconSize;
-		var cyCut = (yBoxBottom - yBoxTop) / 2;
-		var cxCut = 0.577 * cyCut;	//	30 degrees
-		var xBoxLeft = x - (4 * metrics.iconSpacing) - metrics.iconSize;
-		var xBoxRight = x + (4 * metrics.iconSpacing) + metrics.iconSize;
-		ctx.beginPath();
-		ctx.moveTo(xBoxRight - cxCut, yBoxTop);
-		ctx.lineTo(xBoxRight, yBoxTop + cyCut);
-		ctx.lineTo(xBoxRight, yBoxBottom);
-		ctx.lineTo(xBoxLeft, yBoxBottom);
-		ctx.lineTo(xBoxLeft, yBoxTop + cyCut);
-		ctx.lineTo(xBoxLeft + cxCut, yBoxTop);
-		ctx.closePath();
+			//	For imperial worlds, show both designation and tech level
 
-		ctx.shadowBlur = (isForeign ? 0 : 15);
-		ctx.shadowColor = "#000000";
-		ctx.globalAlpha = (isIndependent ? 0.5 : 0.75);
-		ctx.fillStyle = metrics.designationStyle;
+			if (!isIndependent)
+				{
+				var worldDesignation = $Anacreon.designTypes[this.designation];
+				worldDesignation.paintIconSmall(ctx,
+						metrics.xRightIcon,
+						metrics.yIcons,
+						metrics.cxIcon,
+						metrics.cyIcon);
 
-		ctx.fill();
+				InfoPaneHelper.paintTechLevelIcon(ctx,
+						this.techLevel,
+						metrics.xLeftIcon,
+						metrics.yIcons,
+						metrics.cxIcon,
+						metrics.cyIcon);
+				}
+				
+			//	Otherwise, only show tech level
+			
+			else
+				{
+				InfoPaneHelper.paintTechLevelIcon(ctx,
+						this.techLevel,
+						metrics.xCenterIcon,
+						metrics.yIcons,
+						metrics.cxIcon,
+						metrics.cyIcon);
+				}
+			}
+		else if (metrics.drawMilitaryIcons)
+			{
+			var forces = this.getForceComposition();
 
-		ctx.globalAlpha = 1.0;
-		ctx.shadowBlur = 0;
+			ctx.font = metrics.fontText;
+			ctx.textBaseline = "top";
+
+			var yText = metrics.yIcons + metrics.cyIcon + metrics.iconSpacing;
+
+			if (forces.spaceForceType && forces.groundForceType)
+				{
+				this.drawInfoBox(ctx, x, y, metrics);
+
+				CanvasUtil.drawImage(ctx,
+						metrics.xRightIcon,
+						metrics.yIcons,
+						metrics.cxIcon,
+						metrics.cyIcon,
+						forces.groundForceType.imageSmall
+						);
+
+				ctx.textAlign = "left";
+				ctx.fillStyle = metrics.nameStyle;
+				ctx.fillText($Anacreon.formatForce(forces.groundForces), metrics.xText + (2 * metrics.iconSpacing), yText);
+
+				CanvasUtil.drawImage(ctx,
+						metrics.xLeftIcon,
+						metrics.yIcons,
+						metrics.cxIcon,
+						metrics.cyIcon,
+						forces.spaceForceType.imageSmall
+						);
+
+				ctx.textAlign = "right";
+				ctx.fillStyle = metrics.nameStyle;
+				ctx.fillText($Anacreon.formatForce(forces.spaceForces), metrics.xText - (2 * metrics.iconSpacing), yText);
+				}
+			else if (forces.spaceForceType)
+				{
+				this.drawInfoBox(ctx, x, y, metrics);
+
+				CanvasUtil.drawImage(ctx,
+						metrics.xCenterIcon,
+						metrics.yIcons,
+						metrics.cxIcon,
+						metrics.cyIcon,
+						forces.spaceForceType.imageSmall
+						);
+
+				ctx.textAlign = "center";
+				ctx.fillStyle = metrics.nameStyle;
+				ctx.fillText($Anacreon.formatForce(forces.spaceForces), metrics.xText, yText);
+				}
+			else if (forces.groundForceType)
+				{
+				this.drawInfoBox(ctx, x, y, metrics);
+
+				CanvasUtil.drawImage(ctx,
+						metrics.xCenterIcon,
+						metrics.yIcons,
+						metrics.cxIcon,
+						metrics.cyIcon,
+						forces.groundForceType.imageSmall
+						);
+
+				ctx.textAlign = "center";
+				ctx.fillStyle = metrics.nameStyle;
+				ctx.fillText($Anacreon.formatForce(forces.groundForces), metrics.xText, yText);
+				}
+
+			ctx.textAlign = "left";
+			}
 		}
 
 	//	Draw the world
 
-	if (metrics.drawWorldClass)
+	if (metrics.showAsWorldClass)
 		{
 		var worldClass = $Anacreon.designTypes[this.worldClass];
 		if (worldClass && worldClass.imageSmall)
@@ -1041,6 +1158,17 @@ WorldObject.prototype.drawGalacticMap = function (ctx, mapMetrics, x, y, pixelsP
 			ctx.restore();
 			}
 		}
+	else if (metrics.showAsDesignation)
+		{
+		var iconSize = 3 * $Map.maxWorldRadius;
+		var worldDesignation = $Anacreon.designTypes[this.designation];
+
+		worldDesignation.paintIconSmall(ctx,
+				x - (iconSize / 2),
+				y - (iconSize / 2),
+				iconSize,
+				iconSize);
+		}
 	else
 		{
 		ctx.fillStyle = metrics.worldStyle;
@@ -1064,42 +1192,6 @@ WorldObject.prototype.drawGalacticMap = function (ctx, mapMetrics, x, y, pixelsP
 		ctx.fillText((metrics.upperCaseText ? this.name.toUpperCase() : this.name), metrics.xText, metrics.yText);
 		ctx.textAlign = "left";
 		
-		//	Draw icons for designation and tech level below the name.
-		
-		if (metrics.drawDesignationIcons)
-			{
-			//	For imperial worlds, show both designation and tech level
-
-			if (!isIndependent)
-				{
-				var worldDesignation = $Anacreon.designTypes[this.designation];
-				worldDesignation.paintIconSmall(ctx,
-						metrics.xText + (metrics.iconSpacing / 2),
-						metrics.yIcons,
-						metrics.iconSize,
-						metrics.iconSize);
-
-				InfoPaneHelper.paintTechLevelIcon(ctx,
-						this.techLevel,
-						metrics.xText - (metrics.iconSpacing / 2) - metrics.iconSize,
-						metrics.yIcons,
-						metrics.iconSize,
-						metrics.iconSize);
-				}
-				
-			//	Otherwise, only show tech level
-			
-			else
-				{
-				InfoPaneHelper.paintTechLevelIcon(ctx,
-						this.techLevel,
-						metrics.xText - (metrics.iconSize / 2),
-						metrics.yIcons,
-						metrics.iconSize,
-						metrics.iconSize);
-				}
-			}
-
 		//	Draw status message
 
 		if (metrics.statusMessage)
@@ -1187,6 +1279,37 @@ WorldObject.prototype.drawGalacticMapSelection = function (ctx)
 	{
 	MapHelper.paintGalacticMapSelection(ctx, this.mapPosX, this.mapPosY, null);
 	}
+
+WorldObject.prototype.drawInfoBox = function (ctx, x, y, metrics)
+	{
+	var isForeign = (this.sovereignID != $Anacreon.userInfo.sovereignID);
+	var isIndependent = (this.sovereignID == $Anacreon.independentID);
+
+	var yBoxTop = metrics.yText;
+	var yBoxBottom = metrics.yText + metrics.cyInfoBox;
+	var cyCut = (yBoxBottom - yBoxTop) / 2;
+	var cxCut = 0.577 * cyCut;	//	30 degrees
+	var xBoxLeft = x - metrics.cxHalfInfoBox;
+	var xBoxRight = x + metrics.cxHalfInfoBox;
+	ctx.beginPath();
+	ctx.moveTo(xBoxRight - cxCut, yBoxTop);
+	ctx.lineTo(xBoxRight, yBoxTop + cyCut);
+	ctx.lineTo(xBoxRight, yBoxBottom);
+	ctx.lineTo(xBoxLeft, yBoxBottom);
+	ctx.lineTo(xBoxLeft, yBoxTop + cyCut);
+	ctx.lineTo(xBoxLeft + cxCut, yBoxTop);
+	ctx.closePath();
+
+	ctx.shadowBlur = (isForeign ? 0 : 15);
+	ctx.shadowColor = "#000000";
+	ctx.globalAlpha = (isIndependent ? 0.5 : 0.75);
+	ctx.fillStyle = metrics.designationStyle;
+
+	ctx.fill();
+
+	ctx.globalAlpha = 1.0;
+	ctx.shadowBlur = 0;
+	}
 	
 WorldObject.prototype.drawHistoryPane = function (ctx, mapMetrics, x, y, pixelsPerUnit, isSelected, isFaded, isHovering)
 	{
@@ -1271,7 +1394,10 @@ WorldObject.prototype.drawPlanetaryMap = function (ctx, x, y, pixelsPerUnit)
 
 WorldObject.prototype.getForceComposition = function ()
 	{
-	return SpaceObject.calcForceComposition(this.resources);
+	if (this.composition == null)
+		this.composition = SpaceObject.calcForceComposition(this.resources);
+
+	return this.composition;
 	}
 
 WorldObject.prototype.getImportance = function ()
