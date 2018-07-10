@@ -296,7 +296,7 @@
 	
 	<div id="dlgUISettings" class="smallDialog" style="display:none">
 		<div class="dlgLabel ctrlLabel">Display Options</div>
-		<input class="dlgCheckbox ctrlShowManeuveringTrails" type="checkbox">Show maneuvering trails</input>
+		<input class="dlgCheckbox ctrlShowManeuveringTrails" type="checkbox"/>Show maneuvering trails
 		<div class="ctrlCancel mediumButton136Y">Cancel</div>
 		<div class="ctrlOK mediumButton136Y">OK</div>
 		<div class="dlgErrorBar"></div>
