@@ -96,7 +96,7 @@ $UI.centerElement = function (elementSel)
 	$(elementSel).css({top:dlgTop, left:dlgLeft});
 	}
 
-$UI.drawText = function (ctx, x, y, maxWidth, cyLine, text)
+$UI.drawText = function (ctx, x, y, maxWidth, cyLine, text, maxLines)
 	{
 	var i, j;
 	
@@ -112,6 +112,7 @@ $UI.drawText = function (ctx, x, y, maxWidth, cyLine, text)
 	//	Start at the top
 
 	var yPos = y;
+	var yPosMax = y + (maxLines ? (maxLines - 1) : 1000) * cyLine;
 
 	//	Split up into paragraphs
 
@@ -160,6 +161,11 @@ $UI.drawText = function (ctx, x, y, maxWidth, cyLine, text)
 				yPos += cyLine;
 				curLine = textWords[i];
 				widthLeft = maxWidth - wordWidth;
+
+				//	If there is no room for another line, then we're done
+
+				if (yPos > yPosMax)
+					return (yPos - y);
 				}
 			}
 		

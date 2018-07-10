@@ -1427,7 +1427,7 @@ var InfoPaneHelper =
 		var cxText = cxWidth - (imageWidth + $Style.cxTilePadding);
 		ctx.font = $Style.tileFontMedium;
 		ctx.fillStyle = $Style.tileTextHighlight;
-		$UI.drawText(ctx, xText, yText, cxText, $Style.tileFontMediumHeight, text);
+		$UI.drawText(ctx, xText, yText, cxText, $Style.tileFontMediumHeight, text, 2);
 		}),
 
 	paintIconAndTextAndProgress: (function (ctx, x, y, cxWidth, imageDesc, label, text, progress)
@@ -1926,10 +1926,10 @@ var InfoPaneHelper =
 
 		//	Compute metrics
 
-		var BBoxCount = 2;
+		var BBoxCount = 0;
 		var cxBBox = 140;
 
-		var CBoxCount = 3;
+		var CBoxCount = 1;
 		var cxCBox = 80;
 
 		var DBoxCount = 2;
@@ -1941,22 +1941,16 @@ var InfoPaneHelper =
 					+ (cxDBox * DBoxCount)
 					+ ($Style.cxTilePadding * (BBoxCount + CBoxCount + DBoxCount - 1)));
 
-		var ABoxCount = 1;
+		var ABoxCount = 3;
 		var cxABox = (cxRemainder - (ABoxCount * $Style.cxTilePadding)) / ABoxCount;
 		
 		//	Paint top bar
 
-		var longBoxCount = 3;
-		var shortBoxCount = 5;
-		var cxShortBox = 64;
-		var cxLastSection = (shortBoxCount * cxShortBox) + ((shortBoxCount - 1) * $Style.cxTilePadding);
-		
-		var cxStatsBox = (cxInner - cxLastSection - ((longBoxCount - 1) * $Style.cxTilePadding)) / longBoxCount;
 		var x = xInner;
 		var y = yInner;
 		
-		InfoPaneHelper.paintIconAndText(ctx, x, y, cxBBox, [ ], "sovereign", $Anacreon.sovereignList[obj.sovereignID].name);
-		x += cxBBox + $Style.cxTilePadding;
+		InfoPaneHelper.paintIconAndText(ctx, x, y, cxABox, [ ], "sovereign", $Anacreon.sovereignList[obj.sovereignID].name);
+		x += cxABox + $Style.cxTilePadding;
 		
 		var designationType = $Anacreon.designTypes[obj.designation];
 		if (obj.buildComplete)
@@ -1989,14 +1983,8 @@ var InfoPaneHelper =
 		else
 			popTargetValue = null;
 
-		InfoPaneHelper.paintTechLevelInfo(ctx, x, y, cxBBox, "tech level", obj.techLevel, techLevelValue);
-		x += cxBBox + $Style.cxTilePadding;
-		
-		//InfoPaneHelper.paintIconAndText(ctx, x, y, cxCBox, null, "space forces", $Anacreon.formatNumberAsFloat(forces.spaceForces / 100.0, 1));
-		x += cxCBox + $Style.cxTilePadding;
-		
-		//InfoPaneHelper.paintIconAndText(ctx, x, y, cxCBox, null, "ground forces", $Anacreon.formatNumberAsFloat(forces.groundForces / 100.0, 1));
-		x += cxCBox + $Style.cxTilePadding;
+		InfoPaneHelper.paintTechLevelInfo(ctx, x, y, cxABox, "tech level", obj.techLevel, techLevelValue);
+		x += cxABox + $Style.cxTilePadding;
 		
 		InfoPaneHelper.paintIconAndText(ctx, x, y, cxCBox, null, "social order", obj.revIndex);
 		x += cxCBox + $Style.cxTilePadding;
