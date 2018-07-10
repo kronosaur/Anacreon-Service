@@ -369,6 +369,33 @@ NavBar.prototype.drawScale = function (ctx)
 	ctx.fillText(label, x - cxHalfSpacing, y + (cyHeight / 2));
 	}
 
+NavBar.prototype.drawVersion = function (ctx)
+	{
+	//	Compute the size of the scale in pixels
+		
+	var scaleLY = ZOOM_LEVELS[$Map.zoomLevel][3];
+	var cxScale = scaleLY * ZOOM_LEVELS[$Map.zoomLevel][2];
+	var cxHalfSpacing = 3;
+		
+	//	Position
+
+	var x = 338;
+	var y = 36;
+	var cyHeight = 20;
+
+	//	Text
+
+	var version = $ServiceInfo.packageVersion.split(" ");
+	var label = version[0] + " " + version[1];
+		
+	ctx.font = $Style.tileFontMedium;
+	ctx.textBaseline = "middle";
+	ctx.textAlign = "center";
+
+	ctx.fillStyle = $Style.tileTextNormal;
+	ctx.fillText(label, x, y + (cyHeight / 2));
+	}
+
 NavBar.prototype.findTileAtPos = function (x, y)
 	{
 	var i;
@@ -417,6 +444,7 @@ NavBar.prototype.onDraw = function ()
 	this.drawFunds(this.ctx);
 	this.drawNameAndTime(this.ctx);
 	this.drawScale(this.ctx);
+	this.drawVersion(this.ctx);
 
 	//	Draw all the active zones
 

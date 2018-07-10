@@ -134,9 +134,11 @@
 <script src="code/worldui.js"></script>
 
 <?eval
-	(block (authToken userInfo)
-		(set! authToken (httpGetCookie 'authToken))
-		(set! userInfo (apiValidateAuthToken authToken))
+	(block (
+		(authToken (httpGetCookie 'authToken))
+		(userInfo (apiValidateAuthToken authToken))
+		(serviceInfo (srvGetInfo))
+		)
 
 		(if userInfo
 			(html (cat
@@ -145,6 +147,7 @@
 				
 					"<script>"
 					"var $UserInfo = new UserInfo(" (toJSON (@ userInfo 'username)) ", " (toJSON (@ userInfo 'rights)) ", " (toJSON authToken) "); "
+					"var $ServiceInfo = { packageName: " (toJSON (@ serviceInfo 'packageName)) ", packageVersion: " (toJSON (@ serviceInfo 'packageVersion)) "}; "
 					"</script>"
 					)
 				{ }
