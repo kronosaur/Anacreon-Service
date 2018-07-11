@@ -2100,23 +2100,22 @@ var UnitRegionHelper = {
 
 		this.paintUnitGroup(ctx, xUnits, yUnits, cxWidth, paintDesc.spaceForcesPaint, spaceForces);
 		InfoPaneHelper.paintIconAndText(ctx, xUnits + $Style.cxTilePadding, yUnits, this.TITLE_WIDTH, null, "space forces", $Anacreon.formatForce(forces.spaceForces));
+		yUnits += (paintDesc.spaceForcesPaint.rows * this.ROW_HEIGHT) + $Style.cyTilePadding;
 			
 		//	Paint ground forces
 
 		if (groundForces.length || options.alwaysShowGroundForces)
 			{
-			yUnits += (paintDesc.spaceForcesPaint.rows * this.ROW_HEIGHT) + $Style.cyTilePadding;
-
 			this.paintUnitGroup(ctx, xUnits, yUnits, cxWidth, paintDesc.groundForcesPaint, groundForces);
 			InfoPaneHelper.paintIconAndText(ctx, xUnits + $Style.cxTilePadding, yUnits, this.TITLE_WIDTH, null, "ground forces", $Anacreon.formatForce(forces.groundForces));
+
+			yUnits += (paintDesc.groundForcesPaint.rows * this.ROW_HEIGHT) + $Style.cyTilePadding;
 			}
 
 		//	Paint cargo, if necessary
 
 		if (cargo.length)
 			{
-			yUnits += (paintDesc.groundForcesPaint.rows * this.ROW_HEIGHT) + $Style.cyTilePadding;
-
 			this.paintUnitGroup(ctx, xUnits, yUnits, cxWidth, paintDesc.cargoPaint, cargo);
 			InfoPaneHelper.paintIconAndText(ctx, xUnits + $Style.cxTilePadding, yUnits, this.TITLE_WIDTH, null, "cargo", $Anacreon.formatNumberAsInteger(cargoMass / this.STD_CARGO_SPACE));
 			}
