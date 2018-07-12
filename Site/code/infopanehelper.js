@@ -819,7 +819,9 @@ var InfoPaneHelper =
 		//	Compute rebellion support
 
 		var support;
-		if (rebellion.popularSupport < -3)
+		if (!rebellion.popularSupport)
+			support = "unknown";
+		else if (rebellion.popularSupport < -3)
 			support = "very strong imperial support";
 		else if (rebellion.popularSupport > 3)
 			support = "unquestioning rebel support";
@@ -836,13 +838,13 @@ var InfoPaneHelper =
 
 		//	Paint stats
 
-		paintLine(xText, yText, cxText, "rebel forces", rebellion.rebelForces);
+		paintLine(xText, yText, cxText, "rebel forces", (rebellion.rebelForces ? rebellion.rebelForces : "unknown"));
 		yText += $Style.tileFontMediumHeight;
 
 		paintLine(xText, yText, cxText, "popular support", support);
 		yText += $Style.tileFontMediumHeight;
 
-		paintLine(xText, yText, cxText, "rebellion duration", $Anacreon.formatDuration($Anacreon.update - rebellion.rebellionStart));
+		paintLine(xText, yText, cxText, "rebellion duration", (rebellion.rebellionStart ? $Anacreon.formatDuration($Anacreon.update - rebellion.rebellionStart) : "unknown"));
 		yText += $Style.tileFontMediumHeight;
 		}),
 		

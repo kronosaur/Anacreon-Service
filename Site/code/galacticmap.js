@@ -273,12 +273,15 @@ $GalacticMap.drawRegion = function (mapMetrics, region)
 	ctx.restore();
 	};
 
-$GalacticMap.drawSovereignName = function (mapMetrics, sovereign)
+$GalacticMap.drawSovereignName = function (mapMetrics, sovereign, options)
 	{
 	var capital = (sovereign.capitalID ? $Anacreon.objList[sovereign.capitalID] : null);
 	if (capital == null)
 		return;
 
+	if (options == null)
+		options = { };
+		
 	//	Compute the size of the name based on the size of the sovereign
 
 	var start = 6;
@@ -295,12 +298,17 @@ $GalacticMap.drawSovereignName = function (mapMetrics, sovereign)
 	ctx.textBaseline = "top";
 
 	var x = capital.mapPosX - (cxText / 2);
-	if (x < 0)
-		x = 0;
-	else if (x + cxText > $Map.canvasWidth)
-		x = $Map.canvasWidth - cxText;
-
 	var y = capital.mapPosY + 20;
+
+	//	Adjust position to fit in map
+
+	if (!options.clipToMap)
+		{
+		if (x < 0)
+			x = 0;
+		else if (x + cxText > $Map.canvasWidth)
+			x = $Map.canvasWidth - cxText;
+		}
 
 	//	Draw
 
@@ -615,13 +623,15 @@ $GalacticMap.onDraw = function (mapMetrics)
 
 	if (snapshot || mapMetrics.pixelsPerUnit <= 1.0)
 		{
+		var options = { clipToMap:!snapshot };
+
 		for (i = 0; i < $Anacreon.sovereignList.length; i++)
 			{
 			var sovereign = $Anacreon.sovereignList[i];
 			if (sovereign)
 				{
 				if (sovereign.territory)
-					$GalacticMap.drawSovereignName(mapMetrics, sovereign);
+					$GalacticMap.drawSovereignName(mapMetrics, sovereign, options);
 				}
 			}
 		}

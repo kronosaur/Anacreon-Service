@@ -625,6 +625,32 @@ function anacreon.safeMode
 			)
 		)
 
+function anacreon.startRevolution
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Starts a revolution on a given world."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			(worldID (@ params 1))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 2)
+					(cat "USAGE\n\nanacreon.startRevolution {gameID} {worldID}")
+
+				//	Invoke
+
+				(invoke 'Anacreon.startRevolution gameID worldID)
+				)
+			)
+		)
+
 function anacreon.startSiege
 		{
 		attributes: (AI2.console AI2.authAdminOnly)
