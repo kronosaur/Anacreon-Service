@@ -246,7 +246,7 @@ $TacticalMap.initGroupLists = function ()
 
 	if (planetObj
 			&& ((planetObj.battlePlan && planetObj.battlePlan.objective)
-				|| (planetObj.hasAttackers() && planetObj.getTargetsToAttack())))
+				|| (planetObj.hasAttackers && planetObj.hasAttackers() && planetObj.getTargetsToAttack())))
 		{
 		newList.push(new TacticalStatusTile(x, y, cxPane, cyStatusTile));
 		y += cyStatusTile + cySpacing;
@@ -446,6 +446,7 @@ $TacticalMap.onDraw = function (mapMetrics)
 	if (total == 0 && obj)
 		{
 		obj.drawPlanetaryMap(ctx, xViewCenter, yViewCenter, pixelsPerUnit);
+		$Map.updatePanZoomAnimation();
 		return;
 		}
 

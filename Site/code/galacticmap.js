@@ -285,8 +285,8 @@ $GalacticMap.drawSovereignName = function (mapMetrics, sovereign, options)
 	//	Compute the size of the name based on the size of the sovereign
 
 	var start = 6;
-	var scale = 7;
-	var fontSize = Math.floor(Math.min(Math.max(12, scale * (Math.log(sovereign.stats.population) - start)), 100));
+	var scale = 5;
+	var fontSize = Math.floor(Math.min(Math.max(12, mapMetrics.pixelsPerUnit * (scale * (Math.log(sovereign.stats.population) - start))), 100));
 
 	ctx.font = fontSize + "pt SansationBold, Verdana, sans-serif";
 	ctx.fillStyle = $Style.tileTextHighlight;
@@ -312,7 +312,7 @@ $GalacticMap.drawSovereignName = function (mapMetrics, sovereign, options)
 
 	//	Draw
 
-	ctx.globalAlpha = 0.5;
+	ctx.globalAlpha = 0.35;
 	ctx.fillText(sovereign.name, x, y);
 	ctx.globalAlpha = 1.0;
 	}
@@ -558,7 +558,24 @@ $GalacticMap.onDraw = function (mapMetrics)
 				$GalacticMap.drawTerritory(mapMetrics, sovereign.territory, style);
 			}
 		}
-	
+
+	//	Paint sovereign names
+
+	if (snapshot || mapMetrics.pixelsPerUnit <= 1.0)
+		{
+		var options = { clipToMap:!snapshot };
+
+		for (i = 0; i < $Anacreon.sovereignList.length; i++)
+			{
+			var sovereign = $Anacreon.sovereignList[i];
+			if (sovereign)
+				{
+				if (sovereign.territory)
+					$GalacticMap.drawSovereignName(mapMetrics, sovereign, options);
+				}
+			}
+		}
+
 	//	Paint trade lines
 	
 	var total = objList.length;
@@ -578,11 +595,14 @@ $GalacticMap.onDraw = function (mapMetrics)
 	ctx.lineWidth = routeDrawDesc.lineWidth;
 	ctx.lineCap = "butt";
 
-	for (i = 0; i < total; i++)
+	if (mapMetrics.pixelsPerUnit > 0.25)
 		{
-		var obj = objList[i];
-		if (obj.tradeRoutes != null)
-			$GalacticMap.drawImportLines(routeDrawDesc, obj, objSelectedID, highlightSelected, lineSelected);
+		for (i = 0; i < total; i++)
+			{
+			var obj = objList[i];
+			if (obj.tradeRoutes != null)
+				$GalacticMap.drawImportLines(routeDrawDesc, obj, objSelectedID, highlightSelected, lineSelected);
+			}
 		}
 
 	//	Paint all objects
@@ -618,23 +638,6 @@ $GalacticMap.onDraw = function (mapMetrics)
 
 	if ($Map.objSelected)
 		$Map.objSelected.drawGalacticMapForeground(ctx, mapMetrics, $Map.uiMode);
-
-	//	Paint sovereign names
-
-	if (snapshot || mapMetrics.pixelsPerUnit <= 1.0)
-		{
-		var options = { clipToMap:!snapshot };
-
-		for (i = 0; i < $Anacreon.sovereignList.length; i++)
-			{
-			var sovereign = $Anacreon.sovereignList[i];
-			if (sovereign)
-				{
-				if (sovereign.territory)
-					$GalacticMap.drawSovereignName(mapMetrics, sovereign, options);
-				}
-			}
-		}
 
 	//	These are UI elements on top of the map
 

@@ -478,6 +478,7 @@ WorldObject.prototype.calcDrawMetrics = function (ctx, mapMetrics, x, y, pixelsP
 
 	var newsIcon = this.getNewsStyle();
 	var drawName = ((!metrics.isDisabled || !isForeign)
+			&& mapMetrics.pixelsPerUnit > 0.25
 			&& (maxRadius > 6
 				|| (maxRadius > 5 && (importance > 1 || !isForeign))
 				|| (maxRadius > 2 && (importance > 1 || newsIcon.style == "highlight"))
