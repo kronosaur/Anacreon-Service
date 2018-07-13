@@ -552,6 +552,34 @@ function anacreon.refreshDesignations
 			)
 		)
 
+function anacreon.repairGame
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Repairs a game."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			(options (@ params 1))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 1)
+					(cat "USAGE\n\nanacreon.repairGame {gameID} [{options}]\n\n"
+						"options:\n\n"
+						"repair: Carry out repairs.")
+
+				//	Invoke
+
+				(invoke 'Anacreon.repairGame gameID options)
+				)
+			)
+		)
+
 function anacreon.sendMessage
 		{
 		attributes: (AI2.console AI2.authAdminOnly)
