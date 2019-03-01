@@ -83,6 +83,48 @@ function anacreon.closeGame
 			)
 		)
 
+function anacreon.consoleOutput
+		{
+		attributes: (AI2.console AI2.internal)
+		export: public
+		help: "Internal call to get console output."
+		}
+
+	(lambda (params)
+		(block (
+			(consoleID (@ params 0))
+			(seq (@ params 1))
+			(username (if (userHasRight 'Arc.admin) Nil (userGetName)))
+			)
+			(switch
+				(< (count params) 2)
+					(cat "ERROR: Invalid call.")
+
+				(block (
+					(consoleResult (invoke 'Anacreon.getConsole consoleID username seq))
+					)
+					//	consoleResult has the following fields:
+					//
+					//	done: If True, then no more outputs
+					//	consoleID: String ID for the console
+					//	result: Console output
+					//	seq: Sequence number for output.
+
+					(switch
+						(@ consoleResult 'done)
+							(@ consoleResult 'result)
+
+						{
+							ai2Directive: 'partialResult
+							partialResult: (@ consoleResult 'result)
+							continueCommand: (cat "anacreon.consoleOutput \"" (@ consoleResult 'consoleID) "\" " (@ consoleResult 'seq))
+							}
+						)
+					)
+				)
+			)
+		)
+
 function anacreon.createSovereign
 		{
 		attributes: (AI2.console AI2.authAdminOnly)
@@ -576,6 +618,49 @@ function anacreon.repairGame
 				//	Invoke
 
 				(invoke 'Anacreon.repairGame gameID options)
+				)
+			)
+		)
+
+function anacreon.run
+		{
+		attributes: (AI2.console)
+		export: public
+		help: "Runs a program on a game."
+		}
+
+	(lambda (params)
+		(block (
+			(gameID (@ params 0))
+			(programName (@ params 1))
+			(username (if (userHasRight 'Arc.admin) Nil (userGetName)))
+			)
+			(switch
+				//	Must have a valid parameter
+				
+				(< (count params) 1)
+					(cat "USAGE\n\nanacreon.run {gameID} {programName}")
+
+				//	Do it
+
+				(block (
+					(consoleResult (invoke 'Anacreon.runProgram gameID username programName))
+					)
+					(switch
+						//	Done
+
+						(@ consoleResult 'done)
+							(@ consoleResult 'result)
+
+						//	Otherwise, we need to continue
+
+						{
+							ai2Directive: 'partialResult
+							partialResult: (@ consoleResult 'result)
+							continueCommand: (cat "anacreon.consoleOutput \"" (@ consoleResult 'consoleID) "\" " (@ consoleResult 'seq))
+							}
+						)
+					)
 				)
 			)
 		)
