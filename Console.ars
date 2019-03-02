@@ -112,11 +112,14 @@ function anacreon.consoleOutput
 
 					(switch
 						(@ consoleResult 'done)
-							(@ consoleResult 'result)
+							{
+								ai2Directive: 'listResult
+								listResult: (@ consoleResult 'result)
+								}
 
 						{
 							ai2Directive: 'partialResult
-							partialResult: (@ consoleResult 'result)
+							listResult: (@ consoleResult 'result)
 							continueCommand: (cat "anacreon.consoleOutput \"" (@ consoleResult 'consoleID) "\" " (@ consoleResult 'seq))
 							}
 						)
@@ -650,13 +653,16 @@ function anacreon.run
 						//	Done
 
 						(@ consoleResult 'done)
-							(@ consoleResult 'result)
+							{
+								ai2Directive: 'listResult
+								listResult: (@ consoleResult 'result)
+								}
 
 						//	Otherwise, we need to continue
 
 						{
 							ai2Directive: 'partialResult
-							partialResult: (@ consoleResult 'result)
+							listResult: (@ consoleResult 'result)
 							continueCommand: (cat "anacreon.consoleOutput \"" (@ consoleResult 'consoleID) "\" " (@ consoleResult 'seq))
 							}
 						)
