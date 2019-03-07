@@ -636,18 +636,19 @@ function anacreon.run
 		(block (
 			(gameID (@ params 0))
 			(programName (@ params 1))
+			(programParams (slice params 2))
 			(username (if (userHasRight 'Arc.admin) Nil (userGetName)))
 			)
 			(switch
 				//	Must have a valid parameter
 				
 				(< (count params) 1)
-					(cat "USAGE\n\nanacreon.run {gameID} {programName}")
+					(cat "USAGE\n\nanacreon.run {gameID} {programName} [{param1} [{param2}...]]")
 
 				//	Do it
 
 				(block (
-					(consoleResult (invoke 'Anacreon.runProgram gameID username programName))
+					(consoleResult (invoke 'Anacreon.runProgram gameID username programName programParams))
 					)
 					(switch
 						//	Done
