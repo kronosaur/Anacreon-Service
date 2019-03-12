@@ -1,11 +1,11 @@
 //	AnacreonPackage.ars
 //
 //	Anacreon Service
-//	Copyright (c) 2012-2013 by Kronosaur Productions, LLC. All Rights Reserved.
+//	Copyright (c) 2012-2019 by Kronosaur Productions, LLC. All Rights Reserved.
 
 Arc.package Anacreon
 	{
-	version:	"Era 4.5 (2018.07.13)"
+	version:	"Era 5.0 (2019.03.12)"
 	}
 
 include messages Anacreon.command
