@@ -1643,6 +1643,49 @@ var InfoPaneHelper =
 		ctx.textAlign = "left";
 		}),
 		
+	paintSmallIconAndLabelAndText: (function (ctx, x, y, cxResBox, alignment, icon, label, text)
+		{
+		var cyHeight = 16;
+		
+		var xPos = x;
+		var yPos = y + (cyHeight / 2);
+		
+		ctx.textBaseline = "middle";
+		ctx.font = $Style.tileFontSmall;
+		
+		//	Paint image
+		
+		var imageHeight = 16;
+		var imageWidth = 16;
+		var cxLabelArea = 16; //2 * $Style.tileFontSmallHeight;
+		var cxImageArea = cxLabelArea + imageWidth;
+		var imageX = (alignment == "right" ? xPos - cxImageArea : xPos);
+		var imageY = yPos - (imageHeight / 2);
+
+		CanvasUtil.drawImage(ctx, imageX, imageY, imageWidth, imageHeight, icon);
+
+		if (label)
+			{
+			ctx.textAlign = "left";
+			ctx.fillStyle = $Style.tileTextHighlight;
+			ctx.fillText(label, imageX + imageWidth, yPos);
+			}
+		
+		var advance = cxImageArea + $Style.cxTilePadding;
+		if (alignment == "right")
+			advance = -advance;
+			
+		xPos += advance;
+		
+		//	Paint name
+		
+		ctx.textAlign = alignment;
+		ctx.fillStyle = $Style.tileTextNormal;
+		ctx.fillText(text, xPos, yPos);
+		
+		ctx.textAlign = "left";
+		}),
+		
 	paintSmallValue: (function (ctx, x, y, cxWidth, label, value)
 		{
 		ctx.textAlign = "center";
@@ -2017,14 +2060,14 @@ var InfoPaneHelper =
 		x = xInner + cxInner;
 		y = yInner + cyInner - cyResBox;
 		
-		for (i = 0; i < obj.traits.length; i++)
+		for (i = obj.traits.length - 1; i >= 0; i--)
 			{
 			var trait = obj.traits[i];
 			var traitType = $Anacreon.designTypes[trait.traitID];
 			
 			if (traitType.category == "feature" && !traitType.hidden)
 				{
-				InfoPaneHelper.paintSmallIconAndText(ctx, x, y, cxResBox, "right", null, traitType.nameDesc);
+				InfoPaneHelper.paintSmallIconAndLabelAndText(ctx, x, y, cxResBox, "right", traitType.imageSmall, traitType.imageLabel, traitType.nameDesc);
 				
 				y -= cyResBox;
 				}

@@ -881,13 +881,22 @@ $Anacreon.initSession = function (onInitialized)
 //		"rebellion"
 //		"worldClass"
 //	inheritFrom: If present, a list of traitIDs that we inherit from.
+//	imageLarge: 800x800 large icon
+//		Image definition:
+//		0.	ID of image
+//		1.	X offset
+//		2.	Y offset
+//		3.	width
+//		4.	height
+//
+//	imageMedium: 128x128 icon
+//	imageSmall: 48x48 icon
+//	imageLabel: Optional label to show with image alone
 //
 //	DESIGNATION (TRAIT)
 //
 //	exclusions: If non-null, list of traitIDs that prevent designation
 //	exports: List of resourceIDs that we export (may be empty).
-//	imageMedium: 128x128 icon
-//	imageSmall: 48x48 icon
 //	maxTechLevel: Maximum tech level for designation.
 //	minTechLevel: Minimum tech level to designate.
 //	primaryIndustry: TraitID of the primary industry, if any.
@@ -924,15 +933,7 @@ $Anacreon.initSession = function (onInitialized)
 //
 //	WORLD CLASS (TRAIT)
 //
-//	imageLarge: 800x800 large icon
-//		Image definition:
-//		0.	ID of image
-//		1.	X offset
-//		2.	Y offset
-//		3.	width
-//		4.	height
-//
-//	imageSmall: 48x48 image icon
+//	No additional fields
 
 function DesignType (serverObj)
 	{
