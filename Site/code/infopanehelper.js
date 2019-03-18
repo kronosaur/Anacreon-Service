@@ -7,6 +7,38 @@
 
 var InfoPaneHelper =
 	{
+	calcCannotBuildText: (function (resType, cannotBuild)
+		{
+		if (cannotBuild == null)
+			return null;
+		else if (cannotBuild[0] == "res")
+			{
+			var neededType = $Anacreon.designTypes[cannotBuild[1]];
+					
+			return "Import or produce " + neededType.nameDesc + " to build.";
+			}
+		else if (cannotBuild[0] == "tech")
+			{
+			var techLevel = $Anacreon.techLevels[cannotBuild[1]];
+					
+			return "World must be " + techLevel.name + " level to produce.";
+			}
+		else if (cannotBuild[0] == "improve")
+			{
+			var neededType = $Anacreon.designTypes[cannotBuild[1]];
+					
+			return "Build " + neededType.nameDesc + " to produce.";
+			}
+		else if (cannotBuild[0] == "unavailable")
+			{
+			return "Unable to produce " + resType.nameDesc + " on world.";
+			}
+		else
+			{
+			return "Cannot build: " + cannotBuild[0];
+			}
+		}),
+
 	clickBuildData: (function (canvasGrid, tileID, data)
 	
 	//	data:
@@ -119,35 +151,9 @@ var InfoPaneHelper =
 					
 					cannotBuildText = "Producing " + productionCount + " per watch.";
 					}
-				else if (cannotBuild[0] == "res")
-					{
-					var neededType = $Anacreon.designTypes[cannotBuild[1]];
-							
-					cannotBuildText = "Import or produce " + neededType.nameDesc + " to build.";
-					isDisabled = true;
-					}
-				else if (cannotBuild[0] == "tech")
-					{
-					var techLevel = $Anacreon.techLevels[cannotBuild[1]];
-							
-					cannotBuildText = "World must be " + techLevel.name + " level to produce.";
-					isDisabled = true;
-					}
-				else if (cannotBuild[0] == "improve")
-					{
-					var neededType = $Anacreon.designTypes[cannotBuild[1]];
-							
-					cannotBuildText = "Build " + neededType.nameDesc + " to produce.";
-					isDisabled = true;
-					}
-				else if (cannotBuild[0] == "unavailable")
-					{
-					cannotBuildText = "Unable to produce " + neededType.nameDesc + " on world.";
-					isDisabled = true;
-					}
 				else
 					{
-					cannotBuildText = "Cannot build: " + cannotBuild[0];
+					cannotBuildText = InfoPaneHelper.calcCannotBuildText(resType, cannotBuild);
 					isDisabled = true;
 					}
 						
@@ -172,6 +178,37 @@ var InfoPaneHelper =
 				tileList.push(theTile);
 				}
             }
+		}),
+
+	createProductionTilesOld: (function (obj)
+		{
+		var i;
+		var tileList = [];
+
+		//	Start by getting production data, which is an array of
+		//	structures, each one corresponding to a resource.
+
+		var prodData = obj.getProductionData();
+		for (i = 0; i < prodData.length; i++)
+			{
+			var resData = prodData[i];
+			var lines = (resData.producedOptimal > 0 ? 1 : 0)
+					+ (resData.consumedOptimal > 0 ? 1 : 0)
+					+ (resData.importedOptimal > 0 ? 1 : 0)
+					+ (resData.exportedOptimal > 0 ? 1 : 0)
+					+ 1;
+
+			tileList.push({
+				cyTile: 40 + lines * $Style.tileFontSmallHeight,
+				data: {
+					obj: obj,
+					resData: resData,
+					},
+				onPaint: InfoPaneHelper.paintResourceProductionTile,
+				});
+			}
+
+		return tileList;
 		}),
 		
 	createResourceTiles: (function (tileList, resources)

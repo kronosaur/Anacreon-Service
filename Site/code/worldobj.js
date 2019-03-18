@@ -1707,34 +1707,8 @@ WorldObject.prototype.getInfoPanes = function (industryPane)
 
 				onGetTileList: (function (canvasGrid, data)
 					{
-					var i;
-					var tileList = [];
 					var obj = data.obj.getSpaceObject();
-
-					//	Start by getting production data, which is an array of
-					//	structures, each one corresponding to a resource.
-
-					var prodData = obj.getProductionData();
-					for (i = 0; i < prodData.length; i++)
-						{
-						var resData = prodData[i];
-						var lines = (resData.producedOptimal > 0 ? 1 : 0)
-								+ (resData.consumedOptimal > 0 ? 1 : 0)
-								+ (resData.importedOptimal > 0 ? 1 : 0)
-								+ (resData.exportedOptimal > 0 ? 1 : 0)
-								+ 1;
-
-						tileList.push({
-							cyTile: 40 + lines * $Style.tileFontSmallHeight,
-							data: {
-								obj: obj,
-								resData: resData,
-								},
-							onPaint: InfoPaneHelper.paintResourceProductionTile,
-							});
-						}
-
-					return tileList;
+					return InfoPaneHelper.createProductionTilesOld(obj);
 					}),
 				},
 
