@@ -825,39 +825,11 @@ CanvasGrid.prototype.onMouseDown = function (xMouse, yMouse)
 	{
 	if (this.hitTestLeftArrow(xMouse, yMouse))
 		{
-		var cxCol = this.cxStdTile + this.cxInterTile;
-		var colNumber = Math.ceil((this.xDesiredScrollPos + this.cxClipStart) / cxCol);
-		var newScrollPos = ((colNumber - 1) * cxCol) - this.cxClipStart;
-
-		//	Scroll
-
-		this.xDesiredScrollPos = newScrollPos;
-		if (this.xDesiredScrollPos <= 0)
-			{
-			this.xDesiredScrollPos = 0;
-			this.cxClipStart = 0;
-			}
-
-		this.cxClipEnd = this.cxWidth - this.cxScrollBar;
-		this.isInvalid = true;
+		this.scrollLeft();
 		}
 	else if (this.hitTestRightArrow(xMouse, yMouse))
 		{
-		var cxCol = this.cxStdTile + this.cxInterTile;
-		var colNumber = Math.floor((this.xDesiredScrollPos + this.cxClipEnd) / cxCol);
-		var newScrollPos = ((colNumber + 1) * cxCol) - this.cxClipEnd;
-
-		//	Scroll
-
-		this.xDesiredScrollPos = newScrollPos;
-		if (this.xDesiredScrollPos >= this.xMaxScrollPos)
-			{
-			this.xDesiredScrollPos = this.xMaxScrollPos;
-			this.cxClipEnd = this.cxWidth;
-			}
-
-		this.cxClipStart = this.cxScrollBar;
-		this.isInvalid = true;
+		this.scrollRight();
 		}
 	else
 		{
@@ -895,11 +867,65 @@ CanvasGrid.prototype.onMouseMove = function (xMouse, yMouse)
 		}
 	}
 
+CanvasGrid.prototype.onMouseWheel = function (xMouse, yMouse, delta)
+	{
+	var i;
+
+	if (delta < 0)
+		{
+		for (i = 0; i < -delta; i++)
+			this.scrollRight();
+		}
+	else
+		{
+		for (i = 0; i < delta; i++)
+			this.scrollLeft();
+		}
+	}
+
 CanvasGrid.prototype.saveUIState = function ()
 	{
 	return {
 		xScrollPos: this.xScrollPos,
 		};
+	}
+
+CanvasGrid.prototype.scrollLeft = function ()
+	{
+	var cxCol = this.cxStdTile + this.cxInterTile;
+	var colNumber = Math.ceil((this.xDesiredScrollPos + this.cxClipStart) / cxCol);
+	var newScrollPos = ((colNumber - 1) * cxCol) - this.cxClipStart;
+
+	//	Scroll
+
+	this.xDesiredScrollPos = newScrollPos;
+	if (this.xDesiredScrollPos <= 0)
+		{
+		this.xDesiredScrollPos = 0;
+		this.cxClipStart = 0;
+		}
+
+	this.cxClipEnd = this.cxWidth - this.cxScrollBar;
+	this.isInvalid = true;
+	}
+
+CanvasGrid.prototype.scrollRight = function ()
+	{
+	var cxCol = this.cxStdTile + this.cxInterTile;
+	var colNumber = Math.floor((this.xDesiredScrollPos + this.cxClipEnd) / cxCol);
+	var newScrollPos = ((colNumber + 1) * cxCol) - this.cxClipEnd;
+
+	//	Scroll
+
+	this.xDesiredScrollPos = newScrollPos;
+	if (this.xDesiredScrollPos >= this.xMaxScrollPos)
+		{
+		this.xDesiredScrollPos = this.xMaxScrollPos;
+		this.cxClipEnd = this.cxWidth;
+		}
+
+	this.cxClipStart = this.cxScrollBar;
+	this.isInvalid = true;
 	}
 	
 //	CanvasGridTile -------------------------------------------------------------
@@ -1560,7 +1586,6 @@ CanvasUtil.drawImage = function (ctx, x, y, cxWidth, cyHeight, imageDesc)
 				y,
 				destWidth,
 				destHeight);
-
 		}
 	else
 		{

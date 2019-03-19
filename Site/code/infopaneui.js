@@ -51,13 +51,30 @@ function InfoPane (canvas)
 			var canvasOffset = e.data.canvasCtrl.canvas.offset();
 			var x = e.pageX - canvasOffset.left;
 			var y = e.pageY - canvasOffset.top;
-			
+
 			//	Handle it
 			
-			e.data.canvasCtrl.onMouseMove(x, y);
+			e.data.canvasCtrl.onMouseMove(x, y, e.wheelDelta);
 			})
 		);
 
+	var data = { canvasCtrl: this };
+
+	this.canvas[0].onwheel = $UI.onwheel({ canvasCtrl: this},
+		(function (e)
+			{
+			//	Convert coordinate to canvas-relative
+			
+			var canvasOffset = e.data.canvasCtrl.canvas.offset();
+			var x = e.pageX - canvasOffset.left;
+			var y = e.pageY - canvasOffset.top;
+			
+			e.data.canvasCtrl.onMouseWheel(x, y, e.delta);
+
+			e.preventDefault();
+			})
+		);
+	
 	//	Hook up tabs
 
 	this.initTabs();
@@ -373,4 +390,10 @@ InfoPane.prototype.onMouseMove = function (xPos, yPos)
 
 	if (this.infoPaneCtrl)
 		this.infoPaneCtrl.onMouseMove(xPos, yPos);
+	}
+
+InfoPane.prototype.onMouseWheel = function (xPos, yPos, delta)
+	{
+	if (this.infoPaneCtrl)
+		this.infoPaneCtrl.onMouseWheel(xPos, yPos, delta);
 	}

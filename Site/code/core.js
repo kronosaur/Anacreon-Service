@@ -627,6 +627,44 @@ $UI.zoomImage = function (imageURL)
 	$UI.enterDialog("#dlgImage");
 	$UI.keydown(onKeydown);
 	}
+
+//	Event Wrappers -------------------------------------------------------------
+
+$UI.onwheel = function (data, handler)
+	{
+	return (function (e) 
+		{
+		//	IE is different
+
+		if (!e)
+			e = window.event;
+
+		//	Prepare event
+
+		e.data = data;
+		if (!e.preventDefault)
+			e.preventDefault = (function () { });
+
+		//	Delta
+
+		var delta = 0;
+		if (e.wheelDelta)
+			delta = e.wheelDelta / 120;
+		else if (e.detail)
+			delta = -e.detail/3;
+
+		e.delta = delta;
+
+		//	Call
+
+		if (delta)
+			handler(e);
+
+		//	Done
+
+		e.returnValue = false;
+		});
+	};
 	
 //	Language -------------------------------------------------------------------
 
