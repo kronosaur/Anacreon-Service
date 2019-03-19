@@ -79,6 +79,7 @@ var $Style = {
 	tileTextFaded: "#808080",
 	tileTextHighlight: "#D9D9FF",
 	tileTextNormal: "#A0A0A0",
+	tileTextWarning: "#FFFFD9",
 	tileAccentBackground: "#3C1265",
 	tileFadedBackground: "#202020",
 	tileNormalBackground: "#404040",

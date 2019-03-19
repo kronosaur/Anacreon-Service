@@ -54,6 +54,12 @@ var InfoPaneHelper =
 				data.curAlloc);
 		}),
 
+	clickIndustryAlloc: (function (canvasGrid, tileID, data)
+		{
+		worldEditIndustryAllocationDialog(data.obj,
+				data.industry.traitID);
+		}),
+
     clickIndustryData: (function (canvasGrid, tileID, data)
         {
         var newSel = new BuildDataSelection(data.obj, data.industry);
@@ -180,6 +186,177 @@ var InfoPaneHelper =
             }
 		}),
 
+	createProductionTiles: (function (obj)
+		{
+		var i;
+
+		//	Start by getting production data, which is an array of
+		//	structures, each one corresponding to a resource.
+
+		var prodData = obj.getProductionData();
+
+		//	Sort the resources
+
+		prodData.sort(function (a,b) 
+			{
+			 if (a.industry && !b.industry)
+				return -1;
+			else if (b.industry && !a.industry)
+				return 1;
+			else if (a.industry && b.industry)
+				{
+				var aType = $Anacreon.designTypes[a.industry.traitID];
+				var bType = $Anacreon.designTypes[b.industry.traitID];
+
+				//	Primary industry always goes first
+
+				if (a.industry.isPrimary && !b.industry.isPrimary)
+					return -1;
+				else if (b.industry.isPrimary && !a.industry.isPrimary)
+					return 1;
+
+				//	Shipyard industry next
+
+				if (aType.role == "shipyardIndustry" && bType.role != "shipyardIndustry")
+					return -1;
+				else if (bType.role == "shipyardIndustry" && aType.role != "shipyardIndustry")
+					return 1;
+
+				//	Then academies
+
+				if (aType.role == "academyIndustry" && bType.role != "academyIndustry")
+					return -1;
+				else if (bType.role == "academyIndustry" && aType.role != "academyIndustry")
+					return 1;
+
+				//	Then defense industries
+
+				if (aType.role == "citadelIndustry" && bType.role != "citadelIndustry")
+					return -1;
+				else if (bType.role == "citadelIndustry" && aType.role != "citadelIndustry")
+					return 1;
+
+				if (aType.role == "orbitalDefenseIndustry" && bType.role != "orbitalDefenseIndustry")
+					return -1;
+				else if (bType.role == "orbitalDefenseIndustry" && aType.role != "orbitalDefenseIndustry")
+					return 1;
+
+				if (aType.role == "groundDefenseIndustry" && bType.role != "groundDefenseIndustry")
+					return -1;
+				else if (bType.role == "groundDefenseIndustry" && aType.role != "groundDefenseIndustry")
+					return 1;
+
+				//	Then component industries
+
+				if (aType.role == "componentIndustry" && bType.role != "componentIndustry")
+					return -1;
+				else if (bType.role == "componentIndustry" && aType.role != "componentIndustry")
+					return 1;
+
+				//	By industry name
+				
+				var aName = aType.nameDesc.toLowerCase();
+				var bName = bType.nameDesc.toLowerCase();
+				if (aName < bName)
+					return -1;
+				else if (aName > bName)
+					return 1;
+
+				//	If we have a build index, use that.
+
+				if (a.buildIndex != null && b.buildIndex != null)
+					{
+					if (a.buildIndex < b.buildIndex)
+						return -1;
+					else if (a.buildIndex > b.buildIndex)
+						return 1;
+					}
+				}
+
+			//	Lastly, by name
+
+			aName = a.resType.nameDesc.toLowerCase();
+			bName = b.resType.nameDesc.toLowerCase();
+			if (aName < bName)
+				return -1;
+			else if (aName > bName)
+				return 1;
+
+			//	Otherwise, equal
+
+			return 0;
+			});
+
+		//	Generate the tiles
+
+		var tileList = [];
+		for (i = 0; i < prodData.length; i++)
+			{
+			var resData = prodData[i];
+
+			//	Compute the net production
+
+			var value;
+			var netProduction = resData.produced + resData.imported - resData.consumed - resData.exported;
+			if (netProduction > -0.05 && netProduction < 0.05)
+				value = "0";
+			else if (netProduction > 0)
+				{
+				if (netProduction < 10)
+					value = "+" + $Anacreon.formatNumberAsFloat(netProduction, 1);
+				else
+					value = "+" + $Anacreon.formatNumberAsInteger(netProduction);
+				}
+			else
+				{
+				if (netProduction > -10)
+					value = "-" + $Anacreon.formatNumberAsFloat(-netProduction, 1);
+				else
+					value = "-" + $Anacreon.formatNumberAsInteger(-netProduction);
+				}
+
+			//	Color
+
+			var valueStyle;
+			if (resData.cannotBuild != null)
+				valueStyle = $Style.tileTextFaded;
+			else if (netProduction <= -0.05)
+				valueStyle = $Style.tileTextWarning;
+			else
+				valueStyle = $Style.tileTextHighlight;
+
+			//	Figure out the onClick function, if any
+
+			var onClick = null;
+			if (resData.playerProductAlloc)
+//				onClick = InfoPaneHelper.clickBuildData;
+				onClick = InfoPaneHelper.clickIndustryData;
+			else if (resData.playerIndustryAlloc)
+//				onClick = InfoPaneHelper.clickIndustryAlloc;
+				onClick = InfoPaneHelper.clickIndustryData;
+
+			//	Add the tile
+
+			tileList.push({
+				cyTile: 160,
+				data: {
+					obj: obj,
+					industry: resData.industry,
+					resType: resData.resType,
+					value: value,
+					valueStyle: valueStyle,
+					disabled: (resData.cannotBuild != null),
+					curAlloc: resData.alloc,
+					resData: resData,
+					},
+				onPaint: InfoPaneHelper.paintProductionTile,
+				onClick: onClick,
+				});
+			}
+
+		return tileList;
+		}),
+		
 	createProductionTilesOld: (function (obj)
 		{
 		var i;
@@ -204,7 +381,7 @@ var InfoPaneHelper =
 					obj: obj,
 					resData: resData,
 					},
-				onPaint: InfoPaneHelper.paintResourceProductionTile,
+				onPaint: InfoPaneHelper.paintResourceProductionTileOld,
 				});
 			}
 
@@ -407,7 +584,7 @@ var InfoPaneHelper =
 		
 		//	Paint the resource image
 		
-		var imageHeight = 48;
+		var imageHeight = 32;
 		var imageWidth = 64;
 		var imageX = xInner + (cxInner - imageWidth) / 2;
 		var imageY = yInner + 2 * $Style.tileFontMediumHeight;
@@ -755,6 +932,139 @@ var InfoPaneHelper =
 		ctx.font = $Style.tileFontMedium;
 		ctx.fillStyle = $Style.tileTextNormal;
 		$UI.drawText(ctx, xText, yText, cxText, $Style.tileFontMediumHeight, entry.text);
+		}),
+
+	paintProductionTile: (function (ctx, xPos, yPos, cxWidth, cyHeight, data)
+		{
+		function paintLine (label, value, optimal)
+			{
+			if (optimal != 0)
+				{
+				var xCenter = xInner + (cxInner / 2);
+				var xCenterSpacing = $Style.cxTilePadding / 2;
+				var cxValueArea = (cxInner / 2) - xCenterSpacing;
+
+				//	Calculate value
+
+				var valueText = (value < 10 ? $Anacreon.formatNumberAsFloat(value, 1) : $Anacreon.formatNumberAsInteger(value));
+				if (value != optimal)
+					{
+					var optimalText = (optimal < 10 ? $Anacreon.formatNumberAsFloat(optimal, 1) : $Anacreon.formatNumberAsInteger(optimal));
+					valueText = valueText + " [" + optimalText + "]";
+					}
+
+				ctx.font = $Style.tileFontMedium;
+				var cxValue = ctx.measureText(valueText).width;
+
+				//	If we can fit the value on the right half, then we align on the centerline
+
+				if (cxValue <= cxValueArea)
+					{
+					//	Paint label
+
+					ctx.font = $Style.tileFontSmall;
+					ctx.textAlign = "right";
+					ctx.fillStyle = "#A0A0A0";
+					ctx.fillText(label, xCenter - xCenterSpacing, yText);
+
+					//	Paint value
+
+					ctx.font = $Style.tileFontMedium;
+					ctx.textAlign = "left";
+					ctx.fillStyle = "#D9D9FF";
+					ctx.fillText(valueText, xCenter + xCenterSpacing, yText);
+					}
+
+				//	Otherwise, we use up as much space as possible.
+
+				else
+					{
+					//	Paint label
+
+					ctx.font = $Style.tileFontSmall;
+					ctx.textAlign = "left";
+					ctx.fillStyle = "#A0A0A0";
+					ctx.fillText(label, xInner, yText);
+
+					//	Paint value
+
+					ctx.font = $Style.tileFontMedium;
+					ctx.textAlign = "right";
+					ctx.fillStyle = "#D9D9FF";
+					ctx.fillText(valueText, xInner + cxInner, yText);
+					}
+
+				ctx.textAlign = "left";
+				yText += $Style.tileFontMediumHeight;
+				}
+			}
+
+		var i;
+		var obj = data.obj;
+		var resData = data.resData;
+		
+		ctx.textBaseline = "top";
+		
+		var xInner = xPos + $Style.cxTilePadding;
+		var yInner = yPos + $Style.cyTilePadding;
+		var cxInner = cxWidth - 2 * $Style.cxTilePadding;
+		var cyInner = cyHeight - 2 * $Style.cyTilePadding;
+		
+		//	Paint the name of the resource at the top.
+		
+		var xText = xInner + (cxInner / 2);
+		var yText = yInner;
+		ctx.font = $Style.tileFontMedium;
+		ctx.fillStyle = (data.disabled ? $Style.tileTextFaded : $Style.tileTextHighlight);
+		ctx.textAlign = "center";
+		yText += $UI.drawText(ctx, xText, yText, cxInner, $Style.tileFontMediumHeight, data.resType.nameDesc);
+		
+		//	Paint the resource image
+		
+		var imageHeight = 32;
+		var imageWidth = 64;
+		var imageX = xInner + (cxInner - imageWidth) / 2;
+		var imageY = yInner + 2 * $Style.tileFontMediumHeight;
+
+		if (data.disabled)
+			{
+			ctx.globalAlpha = 0.5;
+			CanvasUtil.drawImage(ctx, imageX, imageY, imageWidth, imageHeight, data.resType.imageSmall);
+			ctx.globalAlpha = 1.0;
+			}
+		else
+			CanvasUtil.drawImage(ctx, imageX, imageY, imageWidth, imageHeight, data.resType.imageSmall);
+
+		//	Paint the main value
+		
+		yText = imageY + imageHeight + $Style.cyTilePadding;
+		ctx.font = $Style.tileFontExtraLargeBold;
+		ctx.fillStyle = data.valueStyle;
+		yText += $UI.drawText(ctx, xText, yText, cxInner, $Style.tileFontExtraLargeHeight, data.value);
+		
+		//	Itemized production
+
+		yText += $Style.tileFontSmallHeight;
+
+		if (resData.cannotBuildText)
+			{
+			ctx.font = $Style.tileFontSmall;
+			ctx.fillStyle = $Style.tileTextNormal;
+			yText += $UI.drawText(ctx, xText, yText, cxInner, $Style.tileFontSmallHeight, resData.cannotBuildText);
+			}
+		else
+			{
+			ctx.textBaseline = "alphabetic";
+			ctx.textAlign = "left";
+			paintLine("produced", resData.produced, resData.producedOptimal);
+			paintLine("imported", resData.imported, resData.importedOptimal);
+			paintLine("consumed", resData.consumed, resData.consumedOptimal);
+			paintLine("exported", resData.exported, resData.exportedOptimal);
+			paintLine("available", resData.available, resData.available);
+			ctx.textBaseline = "top";
+			}
+
+		ctx.textAlign = "left";
 		}),
 		
 	paintProgress: (function (ctx, x, y, percentDone, clockRadius, clockStyle)
@@ -1525,7 +1835,7 @@ var InfoPaneHelper =
 		InfoPaneHelper.paintProgress(ctx, xCenter, yCenter, progress, radius, $Style.tileTextNormal);
 		}),
 
-	paintResourceProductionTile: (function (ctx, xPos, yPos, cxWidth, cyHeight, data)
+	paintResourceProductionTileOld: (function (ctx, xPos, yPos, cxWidth, cyHeight, data)
 		{
 		function paintLine (label, value, optimal)
 			{

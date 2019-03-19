@@ -1703,12 +1703,12 @@ WorldObject.prototype.getInfoPanes = function (industryPane)
 
 			paneDesc: {
 				cxStdTile: 142,
-				cyStdTile: 44,
+				cyStdTile: 42,
 
 				onGetTileList: (function (canvasGrid, data)
 					{
 					var obj = data.obj.getSpaceObject();
-					return InfoPaneHelper.createProductionTilesOld(obj);
+					return InfoPaneHelper.createProductionTiles(obj);
 					}),
 				},
 
@@ -2074,14 +2074,25 @@ WorldObject.prototype.getProductionData = function ()
 	for (i = 0; i < this.traits.length; i++)
 		{
 		var trait = this.traits[i];
+		var industryType = $Anacreon.designTypes[trait.traitID];
+
 		if (trait.productionData)
 			{
 			for (j = 0; j < trait.productionData.length; j += 3)
 				{
-				var entry = getEntry(trait.productionData[j]);
 				var optimal = trait.productionData[j + 1];
 				var actual = trait.productionData[j + 2];
 
+				//	Skip if we don't produce/consume this resource. This can 
+				//	happen for industry that produces multiple products, but
+				//	only if demanded (e.g., pressurized habitat)
+
+				if (optimal == 0 && actual == null)
+					continue;
+
+				//	Add
+
+				var entry = getEntry(trait.productionData[j]);
 				if (optimal > 0.0)
 					{
 					entry.producedOptimal += optimal;
@@ -2092,6 +2103,68 @@ WorldObject.prototype.getProductionData = function ()
 					entry.consumedOptimal += -optimal;
 					entry.consumed += (actual == null ? -optimal : -actual);
 					}
+				}
+			}
+
+		//	Add some extra info for build data
+
+		if (trait.buildComplete == null
+				&& (industryType.category == "improvement" || industryType.category == "industry")
+				&& trait.targetAllocation != 0)
+			{
+			var enableIndustryAlloc = (industryType.playerAlloc
+					&& industryType.buildComplete == null)
+
+			var enableProductAlloc = (trait.buildData.length > 3
+					&& industryType.buildComplete == null
+					&& (trait.isFixed || trait.isPrimary)
+					&& industryType.playerProductAlloc);
+
+			for (j = 0; j < trait.buildData.length; j += 3)
+				{
+				var resType = $Anacreon.designTypes[trait.buildData[j]];
+				var alloc = trait.buildData[j + 1];
+				var cannotBuild = trait.buildData[j + 2];
+
+				//	Skip obsolete products
+
+				if (cannotBuild && cannotBuild[0] == "obsolete")
+					continue;
+
+				//	If we don't have an entry for this product, and this industry
+				//	cannot be controlled by the player, then we skip it.
+				//	We skip showing (e.g.) air filters if the planet doesn't need
+				//	or produce air filters.
+
+				if (result[resType.id] == null && !enableIndustryAlloc && !enableProductAlloc)
+					continue;
+
+				//	Get the output structure. We will add fields to this.
+
+				var entry = getEntry(resType.id);
+
+				//	Add appropriate fields
+
+				entry.industry = trait;
+				entry.alloc = alloc;
+				if (cannotBuild)
+					entry.cannotBuildText = InfoPaneHelper.calcCannotBuildText(resType, cannotBuild);
+
+				//	If we let the player pick production allocations within an 
+				//	industry, then we remember that.
+
+				if (enableProductAlloc && cannotBuild == null)
+					entry.playerProductAlloc = true;
+
+				//	If we let the player pick the industry allocation percentage
+				//	then we remember that.
+
+				if (enableIndustryAlloc)
+					entry.playerIndustryAlloc = true;
+
+				//	Remember order in build data array
+
+				entry.buildIndex = j;
 				}
 			}
 		}
@@ -2171,7 +2244,9 @@ WorldObject.prototype.getProductionData = function ()
 
 	var resultArray = [];
 	for (i in result)
+		{
 		resultArray.push(result[i]);
+		}
 
 	//	Done
 
