@@ -1469,6 +1469,12 @@ function CanvasMessageBar (canvas, desc)
 	this.yButton = this.yPos + (desc.cyHeight - this.cyButton) / 2;
 	}
 
+CanvasMessageBar.prototype.hitTest = function (x, y)
+	{
+	return (x >= this.xPos && x < this.xPos + this.cxWidth
+			&& y >= this.yPos && y < this.yPos + this.cyHeight);
+	}
+
 CanvasMessageBar.prototype.onDraw = function ()
 	{
 	if (this.title == null)
@@ -1528,6 +1534,10 @@ CanvasMessageBar.prototype.onMouseUp = function (e)
 	{
 	if (this.buttonLabel == null)
 		return;
+	}
+
+CanvasMessageBar.prototype.onMouseWheel = function (e)
+	{
 	}
 
 //	CanvasUtil -----------------------------------------------------------------

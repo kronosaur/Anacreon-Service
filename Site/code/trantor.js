@@ -789,11 +789,7 @@ $Map.onMouseDown = function (e)
 
 	//	If we're on the message bar, then let it handle it
 
-	if (messageBar 
-			&& e.pageX >= messageBar.xPos
-			&& e.pageX < messageBar.xPos + messageBar.cxWidth
-			&& e.pageY >= messageBar.yPos
-			&& e.pageY < messageBar.yPos + messageBar.cyHeight)
+	if (messageBar && messageBar.hitTest(e.pageX, e.pageY))
 		messageBar.onMouseDown(e);
 
 	//	Otherwise, let the view handle it
@@ -812,11 +808,7 @@ $Map.onMouseMove = function (e)
 
 	//	If we're on the message bar, then let it handle it
 
-	if (messageBar 
-			&& e.pageX >= messageBar.xPos
-			&& e.pageX < messageBar.xPos + messageBar.cxWidth
-			&& e.pageY >= messageBar.yPos
-			&& e.pageY < messageBar.yPos + messageBar.cyHeight)
+	if (messageBar && messageBar.hitTest(e.pageX, e.pageY))
 		messageBar.onMouseMove(e);
 
 	//	Otherwise, let the view handle it
@@ -831,17 +823,37 @@ $Map.onMouseUp = function (e)
 
 	//	If we're on the message bar, then let it handle it
 
-	if (messageBar 
-			&& e.pageX >= messageBar.xPos
-			&& e.pageX < messageBar.xPos + messageBar.cxWidth
-			&& e.pageY >= messageBar.yPos
-			&& e.pageY < messageBar.yPos + messageBar.cyHeight)
+	if (messageBar && messageBar.hitTest(e.pageX, e.pageY))
 		messageBar.onMouseUp(e);
 
 	//	Otherwise, let the view handle it
 
 	else
 		$Map.mapView.onMouseUp(e, $Map.curMetrics);
+	}
+
+$Map.onMouseWheel = function (e)
+	{
+	var messageBar = $Map.messageBar;
+
+	//	If we're on the message bar, then let it handle it
+
+	if (messageBar && messageBar.hitTest(e.pageX, e.pageY))
+		messageBar.onMouseWheel(e);
+
+	//	Otherwise, we zoom in.
+
+	else
+		{
+		if (e.delta > 0)
+			{
+			$Map.cmdZoomIn();
+			}
+		else
+			{
+			$Map.cmdZoomOut();
+			}
+		}
 	}
 
 $Map.refreshSelectionView = function (paneToSelect, newSelection)
@@ -1550,6 +1562,7 @@ $(document).ready(function () {
 		$("#uiMap").on("mousemove", $Map.onMouseMove);
 		$("#uiMap").on("mouseup", $Map.onMouseUp);
 		$("#uiMap").on("contextmenu", onRightClickMap);
+		$("#uiMap")[0].onwheel = $UI.onwheel({ }, $Map.onMouseWheel);
 		$(window).resize(refreshFullMap);
 
 		//	Draw the map
