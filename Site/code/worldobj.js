@@ -1717,6 +1717,7 @@ WorldObject.prototype.getInfoPanes = function (industryPane)
 				var commandList = [];
 				var obj = objSelected.getSpaceObject();
 
+				obj.addInfoPaneImport(objSelected, commandList);
 				obj.addInfoPaneCancel(objSelected, commandList);
 						
 				return commandList;
