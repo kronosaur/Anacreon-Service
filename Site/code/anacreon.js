@@ -644,6 +644,8 @@ $Anacreon.processUpdate = function (updateList)
 
 	if (historyObj)
 		{
+		//	This history object overwrite current history, so we blank it out.
+
 		for (i = 0; i < historyObj.history.length; i++)
 			{
 			var entry = historyObj.history[i];
@@ -651,12 +653,20 @@ $Anacreon.processUpdate = function (updateList)
 				{
 				var obj = $Anacreon.objList[entry.objID];
 				if (obj)
-					{
-					if (obj.history == null)
-						obj.history = [];
+					obj.history = [];
+				}
+			}
 
+		//	Add history to the world.
+
+		for (i = 0; i < historyObj.history.length; i++)
+			{
+			var entry = historyObj.history[i];
+			if (entry.objID)
+				{
+				var obj = $Anacreon.objList[entry.objID];
+				if (obj)
 					obj.history.push(entry);
-					}
 				}
 			}
 		}
