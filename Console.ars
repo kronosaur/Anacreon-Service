@@ -470,6 +470,7 @@ function anacreon.listGames
 							{
 							creator: (@ gameRecord 'creator)
 							id: (@ gameRecord 'gameID)
+							joinStatus: (@ gameRecord 'joinStatus)
 							name: (@ gameRecord 'name)
 							players: (@ gameRecord 'playerCount)
 							playersActive: (|| (@ gameStatus 'playersActive) 0)
@@ -672,6 +673,34 @@ function anacreon.run
 			)
 		)
 
+function anacreon.safeMode
+		{
+		attributes: (AI2.console AI2.authAdminOnly)
+		export: public
+		help: "Sets and clears safe mode."
+		}
+
+	(lambda (params)
+		(block (
+			(safeModeSetting (@ params 0))
+			)
+
+			(switch
+				//	Must have a valid parameter
+
+				(< (count params) 1)
+					(cat "USAGE\n\nanacreon.safeMode {true/nil}")
+
+				//	Invoke
+
+				(if (invoke 'Anacreon.setSafeMode safeModeSetting)
+					(cat "Anacreon safe mode enabled.")
+					(cat "Anacreon open to all players.")
+					)
+				)
+			)
+		)
+
 function anacreon.sendMessage
 		{
 		attributes: (AI2.console AI2.authAdminOnly)
@@ -717,30 +746,44 @@ function anacreon.sendMessage
 			)
 		)
 
-function anacreon.safeMode
+function anacreon.setProperty
 		{
-		attributes: (AI2.console AI2.authAdminOnly)
+		attributes: (AI2.console)
 		export: public
-		help: "Sets and clears safe mode."
+		help: "Sets a property."
 		}
 
 	(lambda (params)
 		(block (
-			(safeModeSetting (@ params 0))
+			(gameID (@ params 0))
+			(property (@ params 1))
+			(value (@ params 2))
+			(username (if (userHasRight 'Arc.admin) Nil (userGetName)))
 			)
-
 			(switch
 				//	Must have a valid parameter
-
+				
 				(< (count params) 1)
-					(cat "USAGE\n\nanacreon.safeMode {true/nil}")
+					(cat
+						"USAGE\n\n"
+						"anacreon.setProperty {gameID} {property} {value}\n\n"
+						"property:\n\n"
+						"joinStatus: [disabled|open]\n"
+						)
 
-				//	Invoke
+				//	For joinStatus we need to make some changes to the game record.
+				//	LATER: We should do this inside the engine.
 
-				(if (invoke 'Anacreon.setSafeMode safeModeSetting)
-					(cat "Anacreon safe mode enabled.")
-					(cat "Anacreon open to all players.")
-					)
+				(= property 'joinStatus)
+					(block ()
+						(invoke 'Anacreon.setGameProperty gameID username property value)
+
+						(invoke 'Aeon.mutate 'Anacreon.games gameID { joinStatus:value } { })
+						)
+
+				//	Do it
+
+				(invoke 'Anacreon.setGameProperty gameID username property value)
 				)
 			)
 		)
