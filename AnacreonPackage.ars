@@ -5,7 +5,7 @@
 
 Arc.package Anacreon
 	{
-	version:	"Era 5.2 (2019.03.20)"
+	version:	"Era 5.3 (2019.03.23)"
 	}
 
 include messages Anacreon.command
@@ -657,11 +657,15 @@ function Anacreon.api+openGameList (lambda (URL method headers message)
 
 		(set! allGames 
 			(map (invoke 'Aeon.getRows (list 'Anacreon.games 'openGamesByCreationTime) nil '(10) 'noKey) 'excludeNil gameRecord
-				(if (invoke 'Aeon.getValue 
-						'Anacreon.gamesAndPlayers
-						(list usernameKey (@ gameRecord 'gameID))
-						)
-					nil
+				(switch
+					//	Exclude games that we're already a part of
+
+					(invoke 'Aeon.getValue 
+							'Anacreon.gamesAndPlayers
+							(list usernameKey (@ gameRecord 'gameID))
+							)
+						nil
+
 					gameRecord
 					)
 				)
