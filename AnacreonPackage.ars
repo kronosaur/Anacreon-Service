@@ -5,7 +5,7 @@
 
 Arc.package Anacreon
 	{
-	version:	"Era 5.3 (2019.03.23)"
+	version:	"Era 5.4 (2019.03.25)"
 	}
 
 include messages Anacreon.command
