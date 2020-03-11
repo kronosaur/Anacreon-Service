@@ -84,9 +84,6 @@ function changePasswordDialog ()
 				
 				else
 					{
-					//	Store the authToken in a cookie and refresh the page.
-					
-					$Hexarc.setAuthTokenCookie(data.authToken);
 					location.reload();
 					}
 				}),
@@ -204,10 +201,6 @@ function registerDialog (onSignIn)
 				
 				else
 					{
-					//	Store the authToken in a cookie and refresh the page.
-					
-					$Hexarc.setAuthTokenCookie(data.authToken);
-
 					if (onSignIn)
 						{
 						$UserInfo = new UserInfo(data.username, data.rights, data.authToken);
@@ -327,10 +320,6 @@ function signInDialog (onSignIn)
 				
 				else
 					{
-					//	Store the authToken in a cookie and refresh the page.
-					
-					$Hexarc.setAuthTokenCookie(data.authToken);
-
 					if (onSignIn)
 						{
 						$UserInfo = new UserInfo(data.username, data.rights, data.authToken);
@@ -399,6 +388,19 @@ function signInDialog (onSignIn)
 
 function signOut ()
 	{
-	$Hexarc.setAuthTokenCookie("");
-	window.location.reload();
+	var request = $.ajax({
+		url: "/api/logoff",
+		type: "POST",
+		data: JSON.stringify({ }),
+		contentType: "application/json",
+		dataType: "json",
+		
+		success: (function (data) {
+			location.reload();
+			}),
+
+		error: (function (jqXHR, textStatus, errorThrown) {
+			location.reload();
+			})
+		});
 	}

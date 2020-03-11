@@ -220,6 +220,7 @@ function Anacreon.api+changePassword (lambda (URL method headers message)
 		(multiverseChangePassword (@ message 'username) {
 			oldPassword: (@ message 'oldPassword)
 			newPassword: (@ message 'newPassword)
+			setCookie: True
 			})
 		)
 	)
@@ -635,7 +636,21 @@ function Anacreon.api+login (lambda (URL method headers message)
 			actual: (@ message 'actual)
 			challengeCredentials: (@ message 'challengeCredentials)
 			password: (@ message 'password)
+			setCookie: True
 			})
+		)
+	)
+	
+//	/api/logoff ----------------------------------------------------------------
+//
+//	Logs off.
+
+function Anacreon.api+logoff (lambda (URL method headers message)
+	(block (
+		(multiverseLogoff (apiGetMultiverseFunction 'multiverse.apiLogoff))
+		)
+
+		(multiverseLogoff)
 		)
 	)
 	
@@ -717,6 +732,7 @@ function Anacreon.api+register (lambda (URL method headers message)
 			credentials: (@ message 'credentials)
 			email: (@ message 'email)
 			password: (@ message 'password)
+			setCookie: True
 			})
 		)
 	)
