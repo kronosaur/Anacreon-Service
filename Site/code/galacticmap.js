@@ -565,7 +565,7 @@ $GalacticMap.onDraw = function (mapMetrics)
 		{
 		var options = { clipToMap:!snapshot };
 
-		for (i = 0; i < $Anacreon.sovereignList.length; i++)
+		for (i in $Anacreon.sovereignList)
 			{
 			var sovereign = $Anacreon.sovereignList[i];
 			if (sovereign)

@@ -62,7 +62,7 @@ $Anacreon.debugPrices = function ()
 	var i;
 	var traderSovereign;
 
-	for (i = 0; i < $Anacreon.sovereignList.length; i++)
+	for (i in $Anacreon.sovereignList)
 		{
 		var sovereign = $Anacreon.sovereignList[i];
 		if (sovereign != null
@@ -563,7 +563,7 @@ $Anacreon.processUpdate = function (updateList)
 	//	Clear all caches (we need to do this because sovereigns do not get 
 	//	updated every cycle).
 
-	for (i = 0; i < $Anacreon.sovereignList.length; i++)
+	for (i in $Anacreon.sovereignList)
 		if ($Anacreon.sovereignList[i])
 			$Anacreon.sovereignList[i].clearCaches();
 	
@@ -780,7 +780,7 @@ $Anacreon.initSession = function (onInitialized)
 
 			//	Get sovereigns
 				
-			$Anacreon.sovereignList = [];
+			$Anacreon.sovereignList = {};
 			for (i = 0; i < data.sovereigns.length; i++)
 				{
 				var sovereign = data.sovereigns[i];
