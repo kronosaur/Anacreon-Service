@@ -5,7 +5,7 @@
 
 Arc.package Anacreon
 	{
-	version:	"Era 5.4 (2020.08.06)"
+	version:	"Era 5.4 (2021.05.06)"
 	}
 
 include messages Anacreon.command
@@ -1568,6 +1568,6 @@ Arc.service Anacreon.web
 				"</p>"
 			"</div>"
 		"</div>"
-		"<div class='copyright'>&copy; 2012-2016 Kronosaur Productions, LLC. All Rights Reserved.<br>Anacreon is a registered trademark of Kronosaur Productions.</div>"
+		"<div class='copyright'>&copy; " (@ (dateTime 'now) 'year) " Kronosaur Productions, LLC. All Rights Reserved.<br>Anacreon is a registered trademark of Kronosaur Productions.</div>"
 		)
 	))
