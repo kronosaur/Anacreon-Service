@@ -1290,6 +1290,8 @@ function onAnimate ()
 	    	    })
     		});
 		}
+
+	requestAnimationFrame(onAnimate)
 	}
 		
 function onKeypress (e)
@@ -1522,7 +1524,7 @@ $(document).ready(function () {
 			{
 			$Map.invalidate();
 			$(window).resize(function () { $Map.invalidate(); });
-			setInterval(onAnimate, 1000 / FRAMES_PER_SECOND);
+			onAnimate();
 			return;
 			}
 
@@ -1588,6 +1590,6 @@ $(document).ready(function () {
 
 		//	Start animation
 			
-		setInterval(onAnimate, 1000 / FRAMES_PER_SECOND);
+		onAnimate()
 		});
 	});
